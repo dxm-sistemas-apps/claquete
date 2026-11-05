@@ -403,7 +403,7 @@ async function omdbGet(imdb){
   const r=await fetch(`https://www.omdbapi.com/?apikey=${encodeURIComponent(S.settings.omdb.trim())}&i=${imdb}`);
   if(!r.ok) throw new Error('OMDb '+r.status); const d=await r.json(); return d.Response==='False'?null:d;
 }
-const imgURL=(p,sz='w342')=>!p?'':(/^https?:/.test(p)?p:`https://image.tmdb.org/t/p/${sz}${p}`);
+const imgURL=(p,sz='w342')=>!p?'':(/^(https?:|data:)/.test(p)?p:`https://image.tmdb.org/t/p/${sz}${p}`);
 
 function classify(type,gids,tvType){
   if(gids.includes(99)||tvType==='Documentary') return 'documentario';
@@ -530,7 +530,7 @@ function watchedCount(it){if(it.type!=='tv')return it.status==='assistido'?1:0;r
 function airedCount(it){if(it.type!=='tv')return 1;return hasEps(it)?airedEps(it).length:(it.episodesN||0)}
 function totalEps(it){return hasEps(it)?allEps(it).length:(it.episodesN||0)}
 const progressOf=it=>{const a=airedCount(it);return a?Math.min(1,watchedCount(it)/a):0};
-function pubScore(it){const s=it.scores||{};if(s.imdb)return{v:s.imdb.v,src:'IMDb'};if(s.trakt)return{v:s.trakt.v,src:'Trakt'};if(s.tmdb)return{v:s.tmdb.v,src:'TMDB'};return null}
+function pubScore(it){const s=it.scores||{};if(s.imdb)return{v:s.imdb.v,src:'IMDb'};if(s.trakt)return{v:s.trakt.v,src:'Trakt'};if(s.tmdb)return{v:s.tmdb.v,src:'TMDB'};if(s.manual)return{v:s.manual.v,src:'Informada'};return null}
 const certHTML=(it,big)=>it.cert?`<span class="cert ${CERT_ORDER.includes(it.cert)&&it.certCountry!=='US'?'c-'+it.cert:''} ${big?'big':''}" title="Classificação indicativa${it.certCountry==='US'?' (EUA)':''}">${esc(it.cert)}</span>`:'';
 const epRating=(it,s,e)=>{const ep=(it.seasons||[]).find(x=>x.n===s)?.eps.find(x=>x.e===e);return ep?(ep.tr!=null?{v:ep.tr,src:'Trakt'}:ep.r!=null?{v:ep.r,src:'TMDB'}:null):null};
 const epMinutes=(it,s,e)=>(it.seasons||[]).find(x=>x.n===s)?.eps.find(x=>x.e===e)?.rt||it.runtime||45;
@@ -558,7 +558,7 @@ function setStatus(it,st){
 function addItem(base,status,catOverride){
   let it=S.items.get(base.id); if(it){toast('Já está na sua biblioteca');return it}
   const {_preview,...b}=base;
-  it={...b,cat:catOverride||b.cat,catLocked:!!catOverride&&catOverride!==b.cat,status:'quero',rating:null,watched:{},epRatings:{},lists:[],addedAt:Date.now(),news:[],seasons:[],seasonsN:b.seasonsN||0,episodesN:b.episodesN||0,scores:b.scores||{}};
+  it={...b,cat:catOverride||b.cat,catLocked:!!catOverride&&catOverride!==b.cat,status:'quero',rating:null,watched:{},epRatings:{},lists:[],addedAt:Date.now(),news:[],seasons:b.seasons||[],seasonsN:b.seasonsN||0,episodesN:b.episodesN||0,scores:b.scores||{}};
   S.items.set(it.id,it); if(status!=='quero') setStatus(it,status); else {saveItem(it)}
   logEv('add',it,{to:status}); if(!it.manual) refreshMany([it.id]); render(true); updateBell(); return it;
 }
@@ -684,23 +684,24 @@ function descubraHTML(){
    ${hasKey()?'':`<div class="notice"><div>${ico('gear',22)}</div><div><b>Conecte o TMDB para ativar a busca</b>Crie uma chave gratuita em themoviedb.org (Configurações → API) e cole nas configurações. Trakt e OMDb são opcionais e trazem notas de episódios e do IMDb.<div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="settings">Abrir configurações</button></div></div></div>`}
    <div class="bar"><div class="search">${ico('search',16)}<input type="search" id="dq" placeholder="Buscar filmes, séries, documentários e realities" value="${esc(S.ui.dq)}" aria-label="Buscar títulos"></div>
    <div class="seg" role="group" aria-label="Categoria">${tabs.map(([k,l])=>`<button data-act="dtab" data-v="${k}" aria-pressed="${tab===k}">${l}</button>`).join('')}</div></div>
-   <div id="dres">${S.ui.dres?resultsHTML(S.ui.dres):''}</div>
+   <div id="dres">${S.ui.dres?resultsHTML(S.ui.dres,S.ui.dq):''}</div>
    <div id="rails" ${S.ui.dres?'hidden':''}>${hasKey()?rs.map(r=>`<section class="rail" id="rail-${r.id}" style="--cc:${r.cat?CATS[r.cat].color:'var(--fg)'}"><h2>${esc(r.title)}</h2><div class="rail-row">${'<div class="sk"></div>'.repeat(8)}</div></section>`).join(''):''}</div>`;
 }
-function resultsHTML(res){
+const manualCTA=q=>`<div class="notice" style="margin-top:18px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:200px"><b>Não encontrou o que procura?</b><span class="muted">Cadastre você mesmo, com capa, temporadas, episódios, classificação e notas.</span></div><button class="btn pri" data-act="manual" data-q="${esc(q||'')}">${ico('plus')}Adicionar manualmente${q?` “${esc(q.length>24?q.slice(0,24)+'…':q)}”`:''}</button></div>`;
+function resultsHTML(res,q){
   if(res==='loading') return `<div class="rail-row">${'<div class="sk"></div>'.repeat(8)}</div>`;
-  if(!res.length) return `<div class="empty"><h3>Nada encontrado</h3><p>Tente outro título ou o nome original.</p></div>`;
-  return `<div class="grid">${res.map(r=>{S.cache.set('p:'+r.id,{t:Date.now(),d:r});return cardHTML(r,{preview:true})}).join('')}</div>`;
+  if(!res.length) return `<div class="empty"><h3>Nada encontrado${q?` para “${esc(q)}”`:''}</h3><p>Tente o nome original em outro idioma ou cadastre o título manualmente.</p><button class="btn pri" data-act="manual" data-q="${esc(q||'')}">${ico('plus')}Adicionar manualmente</button></div>`;
+  return `<div class="grid">${res.map(r=>{S.cache.set('p:'+r.id,{t:Date.now(),d:r});return cardHTML(r,{preview:true})}).join('')}</div>${manualCTA(q)}`;
 }
 async function runSearch(q,targetSel){
   q=q.trim(); const box=$(targetSel); if(!box) return;
   if(q.length<2){S.ui.dres=null;box.innerHTML='';$('#rails')?.removeAttribute('hidden');return}
-  if(!hasKey()){box.innerHTML=`<div class="empty"><h3>Sem chave do TMDB</h3><button class="btn pri" data-act="settings">Configurar</button></div>`;return}
+  if(!hasKey()){box.innerHTML=`<div class="empty"><h3>Sem chave do TMDB</h3><div class="row" style="justify-content:center"><button class="btn pri" data-act="manual" data-q="${esc(q)}">Adicionar manualmente</button><button class="btn" data-act="settings">Configurar</button></div></div>`;return}
   box.innerHTML=resultsHTML('loading'); $('#rails')?.setAttribute('hidden','');
   try{const d=await tmdb('/search/multi',{query:q,include_adult:'false'});
     const res=d.results.filter(r=>r.media_type==='movie'||r.media_type==='tv').map(r=>fromList(r));
-    if(targetSel==='#dres') S.ui.dres=res; box.innerHTML=resultsHTML(res);
-  }catch(e){box.innerHTML=`<div class="empty"><h3>Não foi possível buscar</h3><p>${e.code===401?'Chave do TMDB inválida.':'Verifique sua conexão e tente de novo.'}</p></div>`}
+    if(targetSel==='#dres') S.ui.dres=res; box.innerHTML=resultsHTML(res,q);
+  }catch(e){box.innerHTML=`<div class="empty"><h3>Não foi possível buscar</h3><p>${e.code===401?'Chave do TMDB inválida.':'Verifique sua conexão e tente de novo.'} Você pode cadastrar o título manualmente.</p><button class="btn pri" data-act="manual" data-q="${esc(q)}">${ico('plus')}Adicionar manualmente</button></div>`}
 }
 let railSeq=0;
 async function loadRails(){
@@ -766,12 +767,12 @@ function detailHTML(it,inLib){
    <div class="meta">${meta}</div><div class="meta">${(it.genres||[]).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div></div></div>
   <div class="dbody">
    ${newsb}${next}
-   <div class="sec"><h4>Classificação do conteúdo</h4><div class="scores">${sbox('IMDb',sc.imdb)}${sbox('Trakt',sc.trakt)}${sbox('TMDB',sc.tmdb)}${it.rt?`<div class="score"><b>${esc(it.rt)}</b><small>Rotten Tomatoes</small></div>`:''}${inLib&&it.rating?`<div class="score"><b>${it.rating}</b><small>Minha nota</small></div>`:''}
-    ${!sc.imdb&&!sc.trakt&&!sc.tmdb?'<span class="muted">Sem notas ainda.</span>':''}</div>
+   <div class="sec"><h4>Classificação do conteúdo</h4><div class="scores">${sbox('IMDb',sc.imdb)}${sbox('Trakt',sc.trakt)}${sbox('TMDB',sc.tmdb)}${sbox('Nota informada',sc.manual)}${it.rt?`<div class="score"><b>${esc(it.rt)}</b><small>Rotten Tomatoes</small></div>`:''}${inLib&&it.rating?`<div class="score"><b>${it.rating}</b><small>Minha nota</small></div>`:''}
+    ${!sc.imdb&&!sc.trakt&&!sc.tmdb&&!sc.manual?'<span class="muted">Sem notas ainda.</span>':''}</div>
     ${inLib&&!S.settings.omdb&&!it.manual?'<div class="muted" style="font-size:12.5px;margin-top:8px">Para ver a nota do IMDb, adicione uma chave do OMDb nas configurações.</div>':''}</div>
    ${it.overview?`<div class="sec"><h4>Sinopse</h4><p style="margin:0;max-width:75ch">${esc(it.overview)}</p></div>`:''}
    ${usr}${seasons}
-   <div class="sec"><div class="row">${links}${inLib&&!it.manual?`<button class="btn sm" data-act="drefresh">${ico('refresh',14)}Atualizar dados</button>`:''}${inLib?`<button class="btn sm danger" data-act="dremove" style="margin-left:auto">${ico('trash',14)}Remover</button>`:''}</div>
+   <div class="sec"><div class="row">${links}${inLib&&!it.manual?`<button class="btn sm" data-act="drefresh">${ico('refresh',14)}Atualizar dados</button>`:''}${inLib&&it.manual?`<button class="btn sm" data-act="dedit">Editar informações</button>`:''}${inLib?`<button class="btn sm danger" data-act="dremove" style="margin-left:auto">${ico('trash',14)}Remover</button>`:''}</div>
     ${inLib&&it.updatedAt?`<div class="muted" style="font-size:12.5px;margin-top:8px">Dados atualizados em ${fmtDate(dateOf(it.updatedAt))} às ${new Date(it.updatedAt).toTimeString().slice(0,5)}${it.traktErr?` · Trakt: ${esc(it.traktErr)}`:''}${it.omdbErr?` · OMDb: ${esc(it.omdbErr)}`:''}</div>`:''}</div>
   </div>`;
 }
@@ -814,22 +815,36 @@ function openAdd(cat,listId){
    <div id="ares">${hasKey()?'<p class="muted">Digite ao menos 2 letras. Toque no + de uma capa para adicionar.</p>':'<div class="empty"><h3>Conecte o TMDB</h3><p>Sem a chave não é possível buscar. Você ainda pode adicionar manualmente.</p><button class="btn pri" data-act="settings">Configurar chaves</button></div>'}</div></div>`);
   el._cat=cat;el._list=listId; $('#aq',el)?.focus();
 }
-function openManual(cat){
-  openModal('md',`${xbtn}<form class="sbody" id="mform"><div class="shead"><h2>Adicionar manualmente</h2></div><div class="kv">
-   <label class="field" style="grid-column:1/-1"><span>Título</span><input type="text" name="title" required></label>
-   <label class="field"><span>Categoria</span><select name="cat">${Object.entries(CATS).map(([k,v])=>`<option value="${k}" ${cat===k?'selected':''}>${v.one}</option>`).join('')}</select></label>
-   <label class="field"><span>Formato</span><select name="type"><option value="tv">Episódico (temporadas)</option><option value="movie">Filme único</option></select></label>
-   <label class="field"><span>Ano de lançamento</span><input type="number" name="year" min="1900" max="2100"></label>
-   <label class="field"><span>Temporadas</span><input type="number" name="seasons" min="0"></label>
-   <label class="field"><span>Total de episódios</span><input type="number" name="eps" min="0"></label>
-   <label class="field"><span>Duração (min)</span><input type="number" name="runtime" min="0"></label>
-   <label class="field"><span>Situação</span><select name="cstat">${Object.entries(CSTAT).map(([k,l])=>`<option value="${k}" ${k==='finalizado'?'selected':''}>${l}</option>`).join('')}</select></label>
-   <label class="field"><span>Classificação indicativa</span><select name="cert"><option value="">—</option>${CERT_ORDER.map(c=>`<option>${c}</option>`).join('')}</select></label>
-   <label class="field" style="grid-column:1/-1"><span>Gêneros (separe por vírgula)</span><input type="text" name="genres"></label>
-   <label class="field" style="grid-column:1/-1"><span>Endereço da capa (URL, opcional)</span><input type="url" name="poster" placeholder="https://"></label>
-   <label class="field" style="grid-column:1/-1"><span>Meu status</span><select name="status"><option value="quero">A assistir</option><option value="assistindo">Assistindo</option><option value="assistido">Assistido</option></select></label></div>
-   <div class="row" style="margin-top:18px"><button class="btn pri" type="submit">Adicionar</button><button class="btn" type="button" data-act="close">Cancelar</button></div></form>`);
+function openManual(cat,pre={},editId){
+  const edit=editId?S.items.get(editId):null; const v=edit||pre; const sel=(n,cur,opts)=>`<select name="${n}">${opts}</select>`;
+  const epsPer=edit?(edit.seasons||[]).map(x=>x.eps.length||x.count).join(', '):'';
+  const opt=(arr,cur)=>arr.map(([k,l])=>`<option value="${k}" ${String(cur)===String(k)?'selected':''}>${l}</option>`).join('');
+  openModal('md',`${xbtn}<form class="sbody" id="mform" data-edit="${esc(editId||'')}"><div class="shead"><h2>${edit?'Editar informações':'Adicionar manualmente'}</h2></div>
+   <p class="muted" style="margin:-6px 0 16px;font-size:14px">Preencha o que souber. Só o título é obrigatório.</p>
+   <div class="kv">
+   <label class="field" style="grid-column:1/-1"><span>Título *</span><input type="text" name="title" required value="${esc(v.title||'')}"></label>
+   <label class="field" style="grid-column:1/-1"><span>Título original</span><input type="text" name="original" value="${esc(v.original||'')}"></label>
+   <label class="field"><span>Categoria</span><select name="cat">${opt(Object.entries(CATS).map(([k,c])=>[k,c.one]),v.cat||cat)}</select></label>
+   <label class="field"><span>Formato</span><select name="type">${opt([['tv','Episódico (temporadas)'],['movie','Filme único']],v.type||'tv')}</select></label>
+   <label class="field"><span>Data de lançamento</span><input type="date" name="release" value="${esc(v.release||'')}"></label>
+   <label class="field"><span>Situação do conteúdo</span><select name="cstat">${opt(Object.entries(CSTAT),v.cstat||'finalizado')}</select></label>
+   <label class="field"><span>Duração (min por episódio ou filme)</span><input type="number" name="runtime" min="0" value="${esc(v.runtime||'')}"></label>
+   <label class="field"><span>Classificação indicativa</span><select name="cert"><option value="">—</option>${opt(CERT_ORDER.map(c=>[c,c==='L'?'Livre':c+' anos']),v.cert)}</select></label>
+   <label class="field"><span>Temporadas</span><input type="number" name="seasons" min="0" value="${esc(v.seasonsN||'')}"></label>
+   <label class="field"><span>Total de episódios</span><input type="number" name="eps" min="0" value="${esc(v.episodesN||'')}"></label>
+   <label class="field" style="grid-column:1/-1"><span>Episódios por temporada (opcional, ex.: 10, 8, 12). Cria a lista para marcar episódio por episódio</span><input type="text" name="epsper" inputmode="numeric" placeholder="10, 8, 12" value="${esc(epsPer)}"></label>
+   <label class="field" style="grid-column:1/-1"><span>Gêneros (separe por vírgula)</span><input type="text" name="genres" value="${esc((v.genres||[]).join(', '))}"></label>
+   <label class="field" style="grid-column:1/-1"><span>Sinopse</span><textarea name="overview">${esc(v.overview||'')}</textarea></label>
+   <label class="field"><span>Endereço da capa (URL)</span><input type="url" name="poster" placeholder="https://" value="${esc(/^https?:/.test(v.poster||'')?v.poster:'')}"></label>
+   <label class="field"><span>Ou envie a imagem da capa</span><input type="file" name="posterfile" accept="image/*"></label>
+   <label class="field"><span>Nota pública (0 a 10)</span><input type="number" name="pub" min="0" max="10" step="0.1" value="${esc(v.scores?.manual?.v||'')}"></label>
+   <label class="field"><span>Minha nota</span><select name="rating"><option value="">—</option>${opt([1,2,3,4,5,6,7,8,9,10].map(n=>[n,n]),v.rating)}</select></label>
+   <label class="field" style="grid-column:1/-1"><span>Meu status</span><select name="status">${opt(Object.entries(USTAT),v.status||'quero')}</select></label></div>
+   <div class="row" style="margin-top:18px"><button class="btn pri" type="submit">${edit?'Salvar':'Adicionar'}</button><button class="btn" type="button" data-act="close">Cancelar</button></div></form>`);
+  setTimeout(()=>$('#mform input[name=title]')?.focus(),50);
 }
+function fileToPoster(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const w=Math.min(400,img.width),h=Math.round(img.height*w/img.width);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',.82))};img.onerror=()=>res(null);img.src=r.result};r.onerror=()=>res(null);r.readAsDataURL(file)})}
+function manualSeasons(txt,release,runtime){const air=release||'1900-01-01';return txt.split(/[,;\s]+/).map(Number).filter(n=>n>0).map((n,i)=>({n:i+1,count:n,air,name:'T'+(i+1),eps:Array.from({length:n},(_,k)=>({e:k+1,name:'Episódio '+(k+1),air,r:null,rt:runtime||null}))}))}
 function openLists(){
   const el=openModal('md','');
   const draw=()=>{el.firstElementChild.innerHTML=`${xbtn}<div class="sbody"><div class="shead"><h2>Minhas listas</h2></div>
@@ -975,7 +990,8 @@ const ACT={
    toast(`“${base.title}” adicionado`);},
  padd:(el)=>{const ov=el.closest('.overlay');const base=ov._item;const it=addItem(base,el.dataset.v);closeModal(ov);if(it)toast(`“${base.title}” adicionado`)},
  add:(el)=>openAdd(el.dataset.cat||'',el.dataset.list||''),
- manual:()=>openManual($('#modals .overlay')?._cat||''),
+ manual:(el)=>{const ov=$$('#modals .overlay').find(o=>o._cat!==undefined);openManual(ov?._cat||'',{title:el.dataset.q||$('#aq')?.value||$('#dq')?.value||''})},
+ dedit:(el)=>{const it=curItem(el);if(it)openManual('',{},it.id)},
  lists:()=>openLists(),
  news:()=>openNews(),
  settings:()=>openSettings(),
@@ -1044,11 +1060,29 @@ document.addEventListener('submit',async ev=>{
   else if(f.id==='nlform'){const ov=f.closest('.overlay');const n=$('#nlname').value.trim();if(!n)return;const l={id:uid(),name:n,createdAt:Date.now()};S.lists.push(l);await saveMeta();const it=S.items.get(ov._for);it.lists=[...(it.lists||[]),l.id];saveItem(it);closeModal(ov);refreshDetails();render(true)}
   else if(f.id==='lrform'){const ov=f.closest('.overlay');const l=S.lists.find(x=>x.id===ov._lid);l.name=$('#lrname').value.trim()||l.name;await saveMeta();closeModal(ov);$$('.overlay').forEach(o=>o._draw?.());render(true)}
   else if(f.id==='sform'){S.settings.tmdb=f.tmdb.value.trim();S.settings.trakt=f.trakt.value.trim();S.settings.omdb=f.omdb.value.trim();S.settings.theme=f.theme.value;S.settings.auto=f.auto.value==='1';await saveMeta();applyTheme();closeModal(f.closest('.overlay'));toast('Configurações salvas');await ensureGenres();render(true);autoUpdate()}
-  else if(f.id==='mform'){const d=Object.fromEntries(new FormData(f));const tv=d.type==='tv';const poster=d.poster?.trim();
-    const it=addItem({id:'m-'+uid(),tmdb:null,type:d.type,cat:d.cat,title:d.title.trim(),original:'',overview:'',poster:poster||null,backdrop:null,genres:(d.genres||'').split(',').map(s=>s.trim()).filter(Boolean),
-      release:d.year?d.year+'-01-01':'',year:d.year?+d.year:null,runtime:+d.runtime||null,cstat:d.cstat,seasonsN:tv?+d.seasons||0:0,episodesN:tv?+d.eps||0:0,cert:d.cert||null,certCountry:d.cert?'BR':'',scores:{},manual:true},d.status,d.cat);
-    const add=$$('#modals .overlay').find(o=>o._list);if(add?._list&&it){it.lists=[add._list];saveItem(it)}
-    $$('#modals .overlay').forEach(o=>closeModal(o)); toast('Adicionado');}
+  else if(f.id==='mform'){
+    const d=Object.fromEntries(new FormData(f)); const editId=f.dataset.edit; const edit=editId?S.items.get(editId):null; const tv=d.type==='tv';
+    let poster=(d.poster||'').trim()||null; const file=f.posterfile?.files?.[0]; if(file){const pd=await fileToPoster(file);if(pd)poster=pd}
+    if(!poster&&edit?.poster?.startsWith('data:')) poster=edit.poster;
+    const release=d.release||''; const runtime=+d.runtime||null;
+    const seasons=tv&&(d.epsper||'').trim()?manualSeasons(d.epsper,release,runtime):null;
+    const fields={title:d.title.trim(),original:(d.original||'').trim(),type:d.type,overview:(d.overview||'').trim(),poster,genres:(d.genres||'').split(',').map(x=>x.trim()).filter(Boolean),release,year:release?+release.slice(0,4):null,runtime,cstat:d.cstat,
+      seasonsN:tv?(seasons?seasons.length:+d.seasons||0):0,episodesN:tv?(seasons?seasons.reduce((a,x)=>a+x.eps.length,0):+d.eps||0):0,cert:d.cert||null,certCountry:d.cert?'BR':''};
+    const pub=parseFloat(String(d.pub||'').replace(',','.')); const rating=+d.rating||null;
+    if(edit){
+      Object.assign(edit,fields,{cat:d.cat}); edit.scores=edit.scores||{}; if(pub>0)edit.scores.manual={v:Math.min(10,pub),n:0};else delete edit.scores.manual;
+      if(seasons){edit.seasons=seasons;const keys=new Set(seasons.flatMap(x=>x.eps.map(e=>epKey(x.n,e.e))));for(const k of Object.keys(edit.watched||{}))if(!keys.has(k))delete edit.watched[k]}
+      else if(!tv) edit.seasons=[];
+      if(rating!==edit.rating){edit.rating=rating;edit.ratedAt=Date.now()}
+      if(d.status!==edit.status) setStatus(edit,d.status); reconcile(edit); await saveItem(edit);
+      closeModal(f.closest('.overlay')); refreshDetails(); render(true); toast('Informações salvas');
+    }else{
+      const it=addItem({...fields,id:'m-'+uid(),tmdb:null,cat:d.cat,backdrop:null,scores:pub>0?{manual:{v:Math.min(10,pub),n:0}}:{},seasons:seasons||[],manual:true},d.status,d.cat);
+      if(it){ if(rating){it.rating=rating;it.ratedAt=Date.now()}
+        const add=$$('#modals .overlay').find(o=>o._list);if(add?._list)it.lists=[add._list]; await saveItem(it)}
+      $$('#modals .overlay').forEach(o=>closeModal(o)); toast(`“${fields.title}” adicionado`);
+    }
+  }
 });
 
 function applyTheme(){const t=S.settings.theme;if(t==='system')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',t)}
