@@ -1,0 +1,14 @@
+CLAQUETE - catálogo de documentários, realities, filmes e séries
+
+COMO USAR
+1. Hospede a pasta em qualquer servidor estático (Firebase Hosting, GitHub Pages, Netlify) ou rode localmente:
+   python3 -m http.server 8080   e abra http://localhost:8080
+   (o modo "instalar no celular" e o cache offline exigem https ou localhost)
+2. Abra o app, clique no engrenagem e cole as chaves:
+   - TMDB (obrigatória, gratuita): themoviedb.org/settings/api  -> capas, temporadas, episódios, gêneros, classificação indicativa
+   - Trakt (opcional): trakt.tv/oauth/applications -> Client ID: nota, status e nota de cada episódio
+   - OMDb (opcional): omdbapi.com/apikey.aspx -> nota do IMDb e Rotten Tomatoes
+3. Os dados ficam no navegador (IndexedDB). Faça backup em Configurações > Backup (JSON).
+
+ARQUIVOS
+index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png
