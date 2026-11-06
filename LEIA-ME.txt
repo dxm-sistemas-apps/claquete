@@ -3,12 +3,16 @@ CLAQUETE - catálogo de documentários, realities, filmes e séries
 COMO USAR
 1. Hospede a pasta em qualquer servidor estático (Firebase Hosting, GitHub Pages, Netlify) ou rode localmente:
    python3 -m http.server 8080   e abra http://localhost:8080
-   (o modo "instalar no celular" e o cache offline exigem https ou localhost)
-2. Abra o app, clique no engrenagem e cole as chaves:
-   - TMDB (obrigatória, gratuita): themoviedb.org/settings/api  -> capas, temporadas, episódios, gêneros, classificação indicativa
-   - Trakt (opcional): trakt.tv/oauth/applications -> Client ID: nota, status e nota de cada episódio
+   (instalar no celular e cache offline exigem https ou localhost)
+2. Clique na engrenagem e cole as chaves:
+   - TMDB (obrigatória, gratuita): themoviedb.org/settings/api -> capas, temporadas, episódios, gêneros, classificação, onde assistir
+   - Trakt (opcional): trakt.tv/oauth/applications -> Client ID: nota, status e nota de cada episódio, temporadas novas
    - OMDb (opcional): omdbapi.com/apikey.aspx -> nota do IMDb e Rotten Tomatoes
+   - TVmaze: não precisa de chave, vem ativado. Confere temporadas e episódios novos.
 3. Os dados ficam no navegador (IndexedDB). Faça backup em Configurações > Backup (JSON).
+
+PÁGINA INICIAL
+O app sempre abre em "Assistindo" (ao abrir, ao sair e voltar). Atualizar a página (F5) mantém a tela atual.
 
 ARQUIVOS
 index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png

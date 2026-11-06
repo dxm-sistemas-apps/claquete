@@ -10,6 +10,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="dns-prefetch" href="https://api.themoviedb.org">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -257,14 +259,44 @@ td a{cursor:pointer}
 .spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--fg);animation:rot .8s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
 
+
+/* ---------- v2: streamings, menu, imagens ---------- */
+.poster img{opacity:0;transition:opacity .25s}
+.poster img.ld{opacity:1}
+.rank{position:absolute;left:8px;bottom:34px;font:800 46px/1 var(--f-display);color:#fff;text-shadow:0 2px 12px rgb(0 0 0/.75);letter-spacing:-.04em}
+.subs{margin:2px 0 8px 22px;padding-left:8px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:1px}
+.subs a{padding:6px 8px;font-size:13.5px;gap:9px}
+.plogo{width:20px;height:20px;border-radius:5px;object-fit:cover;flex:none;background:var(--surface2);display:inline-block}
+.plogo.big{width:48px;height:48px;border-radius:12px}
+.pinit{display:inline-grid;place-items:center;font:700 11px var(--f-display);color:var(--fg)}
+.nav a.in{color:var(--fg)}
+.subnav{display:none;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}
+.subnav::-webkit-scrollbar{display:none}
+.subnav a{flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);text-decoration:none;font-size:13.5px;white-space:nowrap}
+.subnav a[aria-current="page"]{background:var(--inv);color:var(--inv-fg);border-color:var(--inv)}
+.strm{margin:0 0 34px;padding-top:6px;min-height:120px}
+.strm-h{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.strm-t{display:flex;align-items:center;gap:12px;text-decoration:none}
+.strm-t h2{font-size:24px}
+.strm-h .btn{margin-left:auto}
+.h2s{font-size:22px;margin:30px 0 14px}
+.chip.prov{display:inline-flex;gap:8px;align-items:center;text-decoration:none;padding:4px 12px 4px 6px}
+.srcnote{font-size:12.5px;color:var(--muted)}
+.srcnote a{color:var(--fg)}
+.sk.wide{flex-basis:100%;aspect-ratio:auto;height:170px}
+
 /* ---------- mobile ---------- */
 @media (max-width:860px){
   #app{display:block}
-  .side{position:fixed;inset:auto 0 0 0;height:auto;z-index:40;flex-direction:row;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));border-right:0;border-top:1px solid var(--line);overflow:visible}
-  .brand,.side h4,.side .lists,.side .foot{display:none}
-  .nav{flex-direction:row;width:100%}
-  .nav a{flex:1;min-width:0;flex-direction:column;gap:3px;padding:6px 0;font-size:11px;justify-content:center;text-align:center}
+  .side{position:fixed;inset:auto 0 0 0;height:auto;z-index:40;flex-direction:row;padding:6px max(6px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));border-right:0;border-top:1px solid var(--line);overflow:hidden}
+  .brand,.side h4,.side .lists,.side .foot,.nav .subs{display:none}
+  .nav{flex-direction:row;width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;gap:2px}
+  .nav::-webkit-scrollbar{display:none}
+  .nav a{flex:0 0 auto;min-width:76px;flex-direction:column;gap:3px;padding:7px 8px;font-size:11px;justify-content:center;text-align:center;white-space:nowrap;border-radius:10px}
+  .nav a[aria-current="page"]{box-shadow:inset 0 2px 0 var(--fg)}
+  .nav a.in{box-shadow:inset 0 2px 0 var(--muted)}
   .nav a .pip,.nav a .cnt{display:none}
+  .subnav{display:flex}
   main{padding:14px max(16px,env(safe-area-inset-left)) 100px max(16px,env(safe-area-inset-right))}
   .mbrand{display:flex;align-items:center;gap:8px;font:700 18px var(--f-display);margin-bottom:12px}
   .vhead{margin-bottom:16px}
@@ -344,7 +376,11 @@ const ICONS={
  filter:'<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
  trash:'<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
  chevron:'<path d="m9 18 6-6-6-6"/>',
- down:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/>'
+ down:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16"/>',
+ play:'<polygon points="6 3 20 12 6 21 6 3"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+ checkc:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>',
+ cast:'<path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><path d="M2 12a9 9 0 0 1 8 8M2 16a5 5 0 0 1 4 4M2 20h.01"/>'
 };
 const ico=(n,s=18)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
 
@@ -375,7 +411,7 @@ const DB={db:null,mem:{items:new Map(),kv:new Map()},ok:false,
 };
 
 /* ---------- estado ---------- */
-const S={items:new Map(),lists:[],log:[],settings:{tmdb:'',omdb:'',trakt:'',auto:true,theme:'system'},genres:{},cache:new Map(),
+const S={items:new Map(),lists:[],log:[],settings:{tmdb:'',omdb:'',trakt:'',auto:true,tvmaze:true,theme:'system'},genres:{},providers:[],streamCache:new Map(),cache:new Map(),
   ui:{filters:{},dtab:'tudo',dq:'',dres:null,scat:'todos',sper:'tudo',ssort:'added',ssdir:-1,openSeasons:new Set(),tbl:60}};
 const saveItem=it=>{it.updatedLocal=Date.now();return DB.put(it)};
 const saveMeta=()=>DB.kset('meta',{settings:S.settings,lists:S.lists,log:S.log.slice(-1500)});
@@ -410,6 +446,12 @@ function classify(type,gids,tvType){
   if(type==='tv'&&(gids.includes(10764)||tvType==='Reality')) return 'reality';
   return type==='movie'?'filme':'serie';
 }
+const pkey=n=>String(n||'').toLowerCase().replace(/\+/g,'plus').replace(/[^a-z0-9]/g,'').replace(/^amazon/,'').replace(/plus$/,'');
+function cleanProv(d){
+  const wp=d['watch/providers']?.results?.BR; const seen=new Set();
+  const providers=(wp?.flatrate||[]).filter(p=>!/with ads|standard|basic|channel/i.test(p.provider_name)).map(p=>({id:p.provider_id,name:p.provider_name,logo:p.logo_path})).filter(p=>{const k=pkey(p.name);if(seen.has(k))return false;seen.add(k);return true});
+  return {providers,watchLink:wp?.link||''};
+}
 function normCert(c){
   if(!c) return null; c=String(c).trim(); if(/^l(ivre)?$/i.test(c)) return 'L';
   const m=c.match(/^(?:A)?(\d{1,2})$/i); if(m&&CERT_ORDER.includes(m[1])) return m[1]; return c.toUpperCase();
@@ -419,7 +461,7 @@ function normDetail(type,d){
   const o={id:type+'-'+d.id,tmdb:d.id,type,title:d.title||d.name,original:d.original_title||d.original_name,overview:d.overview||'',
     poster:d.poster_path,backdrop:d.backdrop_path,genres:gens.map(g=>g.name),release:d.release_date||d.first_air_date||'',lastAir:d.last_air_date||'',
     tagline:d.tagline||'',imdbId:d.external_ids?.imdb_id||d.imdb_id||null,networks:(d.networks||[]).map(n=>n.name).slice(0,3),
-    origin:d.origin_country?.[0]||d.production_countries?.[0]?.iso_3166_1||'',homepage:d.homepage||''};
+    origin:d.origin_country?.[0]||d.production_countries?.[0]?.iso_3166_1||'',homepage:d.homepage||'',tvdbId:d.external_ids?.tvdb_id||null,...cleanProv(d)};
   o.year=o.release?+o.release.slice(0,4):null; o.catAuto=classify(type,gids,d.type);
   o.scores={tmdb:d.vote_count?{v:+Number(d.vote_average).toFixed(1),n:d.vote_count}:null};
   if(tv){
@@ -443,7 +485,7 @@ function fromList(r,forced){
   const rel=r.release_date||r.first_air_date||'';
   return {id:type+'-'+r.id,tmdb:r.id,type,cat:classify(type,gids,null),title:r.title||r.name,original:r.original_title||r.original_name,overview:r.overview||'',
     poster:r.poster_path,backdrop:r.backdrop_path,genres:gids.map(g=>S.genres[g]).filter(Boolean),release:rel,year:rel?+rel.slice(0,4):null,
-    scores:{tmdb:r.vote_count?{v:+Number(r.vote_average).toFixed(1),n:r.vote_count}:null},_preview:true};
+    scores:{tmdb:r.vote_count?{v:+Number(r.vote_average).toFixed(1),n:r.vote_count}:null},pop:r.popularity||0,_preview:true};
 }
 async function ensureGenres(){
   const g=await DB.kget('genres'); if(g&&Date.now()-g.t<30*864e5){S.genres=g.map;return}
@@ -452,15 +494,77 @@ async function ensureGenres(){
 }
 
 /* Atualiza um item com tudo o que as fontes oferecem */
+const DV=2; /* versão dos dados: ao subir, todos os títulos são reatualizados */
+let tvmLast=0;
+async function tvm(path){
+  for(let t=0;t<2;t++){
+    const w=Math.max(0,tvmLast+280-Date.now()); tvmLast=Date.now()+w; if(w) await sleep(w);
+    const r=await fetch('https://api.tvmaze.com'+path);
+    if(r.status===404) return null; if(r.status===429){await sleep(1500);continue}
+    if(!r.ok) throw new Error('TVmaze '+r.status); return r.json();
+  }
+  throw new Error('TVmaze 429');
+}
+async function tvmazeFor(it){
+  let show=null;
+  if(it.imdbId) show=await tvm('/lookup/shows?imdb='+it.imdbId);
+  if(!show&&it.tvdbId) show=await tvm('/lookup/shows?thetvdb='+it.tvdbId);
+  if(!show&&it.title){const sh=await tvm('/singlesearch/shows?q='+encodeURIComponent(it.original||it.title)); if(sh?.premiered&&it.year&&Math.abs(+sh.premiered.slice(0,4)-it.year)<=1) show=sh}
+  if(!show) return null;
+  const eps=await tvm(`/shows/${show.id}/episodes`);
+  return {show,eps:eps||[]};
+}
+/* Junta episódios de uma fonte extra. Só cria temporadas ausentes (ou vazias) e episódios novos no fim da última temporada. */
+function mergeExtra(it,list,label){
+  it.seasons=it.seasons||[]; const bySeason={}; for(const x of list){if(x.s>0)(bySeason[x.s]??=[]).push(x)}
+  const maxN=Math.max(0,...it.seasons.map(s=>s.n));
+  for(const key of Object.keys(bySeason)){
+    const n=+key, eps=bySeason[key].sort((a,b)=>a.e-b.e); let s=it.seasons.find(x=>x.n===n);
+    const mk=x=>({e:x.e,name:x.name||('Episódio '+x.e),air:x.air||'',r:null,rt:x.rt||null,tm:x.rating??null,src:label});
+    if(!s){it.seasons.push({n,count:eps.length,air:eps.map(e=>e.air).filter(Boolean).sort()[0]||'',name:'T'+n,eps:eps.map(mk),src:label});continue}
+    if(!s.eps.length){s.eps=eps.map(mk);s.count=eps.length;continue}
+    const top=Math.max(0,...s.eps.map(y=>y.e));
+    for(const x of eps){const ee=s.eps.find(y=>y.e===x.e);
+      if(ee){if(!ee.air&&x.air)ee.air=x.air;if(ee.rt==null&&x.rt)ee.rt=x.rt;if(x.rating!=null&&ee.tm==null)ee.tm=x.rating}
+      else if(n===maxN&&x.e>top) s.eps.push(mk(x));}
+    s.eps.sort((a,b)=>a.e-b.e);
+  }
+  it.seasons.sort((a,b)=>a.n-b.n);
+}
+function genEps(ex,rt){return Array.from({length:ex.count},(_,k)=>{const d=new Date(ex.air+'T12:00:00');d.setDate(d.getDate()+k*(ex.gap||0));return{e:k+1,name:'Episódio '+(k+1),air:isoDate(d),r:null,rt:rt||null,src:'manual'}})}
+function applyExtra(it){
+  if(!it.extraSeasons?.length) return; const keep=[]; it.seasons=it.seasons||[];
+  for(const ex of it.extraSeasons){
+    const s=it.seasons.find(x=>x.n===ex.n);
+    if(s&&s.eps.length>=ex.count&&!s.manual) continue; /* as fontes já alcançaram */
+    const eps=genEps(ex,it.runtime);
+    if(!s) it.seasons.push({n:ex.n,count:ex.count,air:ex.air,name:'T'+ex.n,manual:true,eps});
+    else{for(const e of eps) if(!s.eps.find(y=>y.e===e.e)) s.eps.push(e); s.eps.sort((a,b)=>a.e-b.e); s.manual=true}
+    keep.push(ex);
+  }
+  it.extraSeasons=keep; it.seasons.sort((a,b)=>a.n-b.n);
+}
+function recount(it){
+  if(it.type!=='tv') return; const loaded=allEps(it).length;
+  it.seasonsN=Math.max((it.seasons||[]).length,it.seasonMetaN||0);
+  if(loaded) it.episodesN=Math.max(loaded,it.tmdbEps||0);
+  const t=todayISO(); const fut=allEps(it).filter(e=>e.air&&e.air>=t).sort((a,b)=>a.air.localeCompare(b.air)||a.s-b.s||a.e-b.e);
+  if(fut.length){const f=fut[0];it.next={air:f.air,s:f.s,e:f.e,name:f.name};if(it.cstat==='finalizado')it.cstat='exibicao'}
+  else if(it.next&&it.next.air<t) it.next=null;
+}
+const distinctSeasons=list=>new Set(list.filter(x=>x.s>0).map(x=>x.s)).size;
+
+/* Atualiza um item com tudo o que as fontes oferecem */
 async function enrich(it,{force}={}){
   const tv=it.type==='tv';
-  const old={seasonsN:it.seasonsN,episodesN:it.episodesN,cstat:it.cstat,next:it.next,had:!!it.updatedAt,aired:airedCount(it)};
-  const d=await tmdb(`/${it.type}/${it.tmdb}`,{append_to_response:tv?'external_ids,content_ratings':'external_ids,release_dates'});
+  const old={seasonsN:it.seasonsN,episodesN:it.episodesN,cstat:it.cstat,next:it.next,had:!!it.updatedAt};
+  const d=await tmdb(`/${it.type}/${it.tmdb}`,{append_to_response:(tv?'external_ids,content_ratings':'external_ids,release_dates')+',watch/providers'});
   const o=normDetail(it.type,d);
   if(!o.overview){try{const en=await tmdb(`/${it.type}/${it.tmdb}`,{language:'en-US'});o.overview=en.overview||''}catch{}}
   const {catAuto,seasonMeta,scores:newScores,...rest}=o; Object.assign(it,rest);
   if(!it.catLocked) it.cat=catAuto;
   it.scores={...(it.scores||{}),tmdb:newScores.tmdb};
+  const src={tmdb:{seasons:o.seasonsN,eps:o.episodesN}};
   if(tv){
     const metas=seasonMeta; const seasons=[];
     for(let i=0;i<metas.length;i+=18){
@@ -469,23 +573,38 @@ async function enrich(it,{force}={}){
         const dd=await tmdb(`/tv/${it.tmdb}`,{append_to_response:chunk.map(m=>'season/'+m.n).join(',')});
         for(const m of chunk){const sd=dd['season/'+m.n]; seasons.push({n:m.n,count:m.count,air:m.air,name:m.name,
           eps:(sd?.episodes||[]).map(e=>({e:e.episode_number,name:e.name,air:e.air_date||'',r:e.vote_count&&e.vote_average?+e.vote_average.toFixed(1):null,rt:e.runtime||null}))})}
-      }catch{for(const m of chunk){const prev=(it.seasons||[]).find(s=>s.n===m.n);seasons.push(prev||{n:m.n,count:m.count,air:m.air,name:m.name,eps:[]})}}
+      }catch{for(const m of chunk){const prev=(it.seasons||[]).find(s=>s.n===m.n&&!s.src);seasons.push(prev||{n:m.n,count:m.count,air:m.air,name:m.name,eps:[]})}}
     }
-    it.seasons=seasons;
+    it.seasons=seasons; it.seasonMetaN=seasons.length; it.tmdbEps=o.episodesN;
+    /* fonte extra 1: TVmaze (sem chave) */
+    if(S.settings.tvmaze!==false){
+      try{const tm=await tvmazeFor(it);
+        if(tm){const list=tm.eps.filter(e=>e.type==='regular'&&e.number!=null).map(e=>({s:e.season,e:e.number,name:e.name,air:e.airdate||'',rt:e.runtime||null,rating:e.rating?.average??null}));
+          mergeExtra(it,list,'TVmaze'); src.tvmaze={seasons:distinctSeasons(list),eps:list.length,url:tm.show.url,status:tm.show.status};
+          const net=tm.show.webChannel?.name; if(net&&!(it.providers||[]).length){it.providers=[resolveProvider(net)]}}
+        delete it.tvmErr;
+      }catch(e){it.tvmErr=String(e.message||e)}
+    }
   }
   if(S.settings.trakt&&it.imdbId){
     try{
       const tr=await traktGet(`/${tv?'shows':'movies'}/${it.imdbId}?extended=full`);
       if(tr){ it.scores.trakt=tr.votes?{v:+tr.rating.toFixed(1),n:tr.votes}:null; it.traktSlug=tr.ids?.slug||null;
         if(tv&&tr.status==='canceled'&&it.cstat!=='finalizado') it.cstat='cancelado';
-        if(tv&&it.traktSlug&&it.seasons?.length){
+        if(tv&&it.traktSlug){
           const ts=await traktGet(`/shows/${it.traktSlug}/seasons?extended=episodes,full`);
-          if(ts) for(const s of ts){const ss=it.seasons.find(x=>x.n===s.number); if(!ss) continue; for(const e of (s.episodes||[])){const ee=ss.eps.find(x=>x.e===e.number); if(ee&&e.votes) ee.tr=+e.rating.toFixed(1)}}
+          if(ts){
+            const list=ts.filter(x=>x.number>0).flatMap(x=>(x.episodes||[]).map(e=>({s:x.number,e:e.number,name:e.title,air:(e.first_aired||'').slice(0,10),rt:e.runtime||null,rating:null})));
+            mergeExtra(it,list,'Trakt'); src.trakt={seasons:distinctSeasons(list),eps:list.length};
+            for(const sn of ts){const ss=it.seasons.find(x=>x.n===sn.number); if(!ss) continue; for(const e of (sn.episodes||[])){const ee=ss.eps.find(x=>x.e===e.number); if(ee&&e.votes) ee.tr=+e.rating.toFixed(1)}}
+          }
           if(!it.next){const ne=await traktGet(`/shows/${it.traktSlug}/next_episode?extended=full`); if(ne?.first_aired) it.next={air:ne.first_aired.slice(0,10),s:ne.season,e:ne.number,name:ne.title}}
         }
       }
     }catch(e){it.traktErr=String(e.message||e)}
   }
+  if(tv){applyExtra(it);recount(it)}
+  it.sources=src;
   if(S.settings.omdb&&it.imdbId&&(force||!it.omdbAt||Date.now()-it.omdbAt>3*864e5)){
     try{const om=await omdbGet(it.imdbId);
       if(om){const v=parseFloat(om.imdbRating); if(!isNaN(v)) it.scores.imdb={v,n:parseInt(String(om.imdbVotes||'0').replace(/\D/g,''))||0};
@@ -494,7 +613,6 @@ async function enrich(it,{force}={}){
       it.omdbAt=Date.now();
     }catch(e){it.omdbErr=String(e.message||e)}
   }
-  // novidades
   if(old.had){const news=[];
     if(old.seasonsN&&it.seasonsN>old.seasonsN) news.push({k:'season',text:`Nova temporada: agora são ${it.seasonsN}`});
     if(old.episodesN&&it.episodesN>old.episodesN) news.push({k:'eps',text:`+${it.episodesN-old.episodesN} episódio(s), total ${it.episodesN}`});
@@ -502,7 +620,7 @@ async function enrich(it,{force}={}){
     if(it.next&&(!old.next||old.next.air!==it.next.air)) news.push({k:'next',text:`Próximo episódio T${it.next.s}E${it.next.e} em ${fmtDate(it.next.air)}`});
     if(news.length){it.news=[...news.map(n=>({...n,at:Date.now(),seen:false})),...(it.news||[])].slice(0,10);logEv('news',it,{text:news.map(n=>n.text).join('; ')})}
   }
-  it.updatedAt=Date.now(); delete it.traktErr;
+  it.updatedAt=Date.now(); it.dv=DV; delete it.traktErr;
   if(it.pendingAll&&hasEps(it)){markAired(it);it.pendingAll=false}
   else if(tv&&it.status==='assistido'&&watchedCount(it)<airedCount(it)&&hasEps(it)){it.status='assistindo';it.finishedAt=null;it.news=[{k:'eps',text:'Novos episódios disponíveis para assistir',at:Date.now(),seen:false},...(it.news||[])].slice(0,10)}
   await saveItem(it); return it;
@@ -517,7 +635,7 @@ async function refreshMany(ids,opt={}){
 function autoUpdate(){
   if(!S.settings.auto||!hasKey()) return; const now=Date.now(); const ids=[];
   for(const it of S.items.values()){ if(it.manual) continue; const age=now-(it.updatedAt||0);
-    const hot=it.cstat==='exibicao'||it.cstat==='planejado'; if(!it.updatedAt||(hot&&age>12*36e5)||age>14*864e5) ids.push(it.id)}
+    const hot=it.cstat==='exibicao'||it.cstat==='planejado'; if(!it.updatedAt||it.dv!==DV||(hot&&age>12*36e5)||age>14*864e5) ids.push(it.id)}
   if(ids.length) refreshMany(ids);
 }
 
@@ -532,7 +650,7 @@ function totalEps(it){return hasEps(it)?allEps(it).length:(it.episodesN||0)}
 const progressOf=it=>{const a=airedCount(it);return a?Math.min(1,watchedCount(it)/a):0};
 function pubScore(it){const s=it.scores||{};if(s.imdb)return{v:s.imdb.v,src:'IMDb'};if(s.trakt)return{v:s.trakt.v,src:'Trakt'};if(s.tmdb)return{v:s.tmdb.v,src:'TMDB'};if(s.manual)return{v:s.manual.v,src:'Informada'};return null}
 const certHTML=(it,big)=>it.cert?`<span class="cert ${CERT_ORDER.includes(it.cert)&&it.certCountry!=='US'?'c-'+it.cert:''} ${big?'big':''}" title="Classificação indicativa${it.certCountry==='US'?' (EUA)':''}">${esc(it.cert)}</span>`:'';
-const epRating=(it,s,e)=>{const ep=(it.seasons||[]).find(x=>x.n===s)?.eps.find(x=>x.e===e);return ep?(ep.tr!=null?{v:ep.tr,src:'Trakt'}:ep.r!=null?{v:ep.r,src:'TMDB'}:null):null};
+const epRating=(it,s,e)=>{const ep=(it.seasons||[]).find(x=>x.n===s)?.eps.find(x=>x.e===e);return ep?(ep.tr!=null?{v:ep.tr,src:'Trakt'}:ep.r!=null?{v:ep.r,src:'TMDB'}:ep.tm!=null?{v:ep.tm,src:'TVmaze'}:null):null};
 const epMinutes=(it,s,e)=>(it.seasons||[]).find(x=>x.n===s)?.eps.find(x=>x.e===e)?.rt||it.runtime||45;
 const ccolor=it=>CATS[it.cat]?.color||'var(--muted)';
 
@@ -565,41 +683,100 @@ function addItem(base,status,catOverride){
 async function removeItem(id){const it=S.items.get(id);if(!it)return;S.items.delete(id);await DB.del(id);logEv('remove',it);render(true);updateBell()}
 
 /* ---------- roteamento ---------- */
-function viewKey(){const h=(location.hash||'').slice(1);if(!h)return 'descubra';if(h==='estatisticas'||h==='descubra')return h;if(HASH2CAT[h])return HASH2CAT[h];if(h.startsWith('lista-'))return h;return 'descubra'}
-const NAV=[['descubra','Descubra','compass'],['documentario','Documentários','globe'],['reality','Realities','users'],['filme','Filmes','film'],['serie','Séries','tv'],['estatisticas','Estatísticas','chart']];
-const navHash=k=>CATS[k]?CATS[k].hash:k;
+const STATUSV={assistindo:['Assistindo','em andamento'],quero:['Para assistir','na fila'],assistido:['Assistido','concluídos']};
+const TITLES={descubra:'Descubra',estatisticas:'Estatísticas',streamings:'Streamings'};
+function viewKey(){
+  const h=(location.hash||'').slice(1); if(!h) return 'assistindo';
+  if(['estatisticas','descubra','assistindo','assistido','streamings'].includes(h)) return h;
+  if(h==='para-assistir') return 'quero';
+  if(HASH2CAT[h]) return HASH2CAT[h];
+  if(h.startsWith('lista-')||h.startsWith('streaming-')) return h;
+  return 'assistindo';
+}
+const NAVG=[
+  {items:[['descubra','Descubra','compass']]},
+  {h:'Meu acompanhamento',items:[['assistindo','Assistindo','play'],['quero','Para assistir','clock'],['assistido','Assistido','checkc']]},
+  {h:'Categorias',items:[['documentario','Documentários','globe'],['reality','Realities','users'],['filme','Filmes','film'],['serie','Séries','tv']]},
+  {h:'Onde assistir',items:[['streamings','Streamings','cast']]},
+  {items:[['estatisticas','Estatísticas','chart']]}
+];
+const navHash=k=>k==='quero'?'para-assistir':CATS[k]?CATS[k].hash:k;
+const SHORT={documentario:'Docs',quero:'A assistir'};
+function allProviders(){
+  const out=[...S.providers]; const ids=new Set(out.map(p=>String(p.id)));
+  for(const it of S.items.values()) for(const p of it.providers||[]) if(!ids.has(String(p.id))){ids.add(String(p.id));out.push({id:p.id,name:p.name,logo:p.logo})}
+  return out;
+}
+const findProvider=pid=>allProviders().find(p=>String(p.id)===String(pid));
+const provCount=pid=>[...S.items.values()].filter(i=>i.providers?.some(p=>String(p.id)===String(pid))).length;
+const plogo=(p,big)=>p.logo?`<img class="plogo ${big?'big':''}" src="${esc(imgURL(p.logo,'w92'))}" alt="" loading="lazy">`:`<span class="plogo pinit ${big?'big':''}" style="${big?'font-size:18px':''}">${esc((p.name||'?')[0])}</span>`;
+function resolveProvider(name){const k=pkey(name);const hit=allProviders().find(p=>pkey(p.name)===k);return hit?{id:hit.id,name:hit.name,logo:hit.logo}:{id:'u-'+k,name,logo:null}}
+const subsHTML=v=>`<div class="subs">${allProviders().map(p=>`<a href="#streaming-${esc(p.id)}" ${v==='streaming-'+p.id?'aria-current="page"':''}>${plogo(p)}<span>${esc(p.name)}</span><span class="cnt">${provCount(p.id)}</span></a>`).join('')}</div>`;
+const subnavHTML=v=>`<div class="subnav" id="subnav"><a href="#streamings" ${v==='streamings'?'aria-current="page"':''}>${ico('cast',16)}Todos</a>${allProviders().map(p=>`<a href="#streaming-${esc(p.id)}" ${v==='streaming-'+p.id?'aria-current="page"':''}>${plogo(p)}${esc(p.name)}</a>`).join('')}</div>`;
 function renderNav(v){
-  const counts={};for(const it of S.items.values())counts[it.cat]=(counts[it.cat]||0)+1;
-  $('#nav').innerHTML=NAV.map(([k,l,i])=>`<a href="#${navHash(k)}" ${v===k?'aria-current="page"':''} style="${CATS[k]?'--cc:'+CATS[k].color:''}">${ico(i,20)}<span>${k==='documentario'&&innerWidth<=860?'Docs':l}</span>${CATS[k]?`<span class="pip"></span><span class="cnt">${counts[k]||0}</span>`:''}</a>`).join('');
+  const counts={};for(const it of S.items.values()){counts[it.cat]=(counts[it.cat]||0)+1;counts[it.status]=(counts[it.status]||0)+1}
+  const inStream=v==='streamings'||v.startsWith('streaming-'); const mob=innerWidth<=860;
+  const nav=$('#nav'),side=$('.side'); const sl=nav.scrollLeft,st=side.scrollTop;
+  nav.innerHTML=NAVG.map(g=>(g.h?`<h4>${g.h}</h4>`:'')+g.items.map(([k,l,i])=>{
+    const cc=CATS[k]; const cnt=(cc||STATUSV[k])?(counts[k]||0):null;
+    return `<a href="#${navHash(k)}" ${v===k?'aria-current="page"':''} class="${k==='streamings'&&inStream&&v!==k?'in':''}" style="${cc?'--cc:'+cc.color:''}">${ico(i,20)}<span>${mob?(SHORT[k]||l):l}</span>${cc?'<span class="pip"></span>':''}${cnt!=null?`<span class="cnt">${cnt}</span>`:''}</a>`+(k==='streamings'&&inStream?subsHTML(v):'');
+  }).join('')).join('');
+  nav.scrollLeft=sl; side.scrollTop=st;
+  const a=$('#nav a[aria-current="page"]:not(.subs a)')||$('#nav a[aria-current="page"]')||$('#nav a.in');
+  if(a){
+    if(mob){const L=a.getBoundingClientRect().left-nav.getBoundingClientRect().left+nav.scrollLeft-(nav.clientWidth-a.offsetWidth)/2;nav.scrollTo({left:Math.max(0,L),behavior:'smooth'})}
+    else{const r=a.getBoundingClientRect(),sr=side.getBoundingClientRect();if(r.top<sr.top+10||r.bottom>sr.bottom-70)side.scrollTop+=r.top-sr.top-sr.height/3}
+  }
   const lc=S.lists.map(l=>`<a href="#lista-${l.id}" ${v==='lista-'+l.id?'aria-current="page"':''}><span>${esc(l.name)}</span><span>${[...S.items.values()].filter(i=>i.lists?.includes(l.id)).length}</span></a>`).join('');
   $('#sidelists').innerHTML=`<h4>Minhas listas</h4>${lc||'<div class="muted" style="padding:4px 12px;font-size:13px">Nenhuma lista ainda</div>'}<button class="btn sm ghost" data-act="lists" style="margin:6px 8px 0;color:var(--muted)">${ico('plus',14)}Gerenciar listas</button>`;
   $('#sidefoot').innerHTML=`<button class="btn sm" data-act="news" title="Novidades">${ico('bell',16)}<span id="bellb"></span></button><button class="btn sm" data-act="refreshall" title="Atualizar tudo">${ico('refresh',16)}</button><button class="btn sm" data-act="settings" title="Configurações">${ico('gear',16)}</button>`;
   updateBell();
 }
 function unseenNews(){let n=0;for(const it of S.items.values())n+=(it.news||[]).filter(x=>!x.seen).length;return n}
-function updateBell(){const n=unseenNews();$$('.bellb').forEach(b=>b.textContent=n?n:'');const b=$('#bellb');if(b)b.innerHTML=n?`<span class="badge">${n}</span>`:''}
+function updateBell(){const n=unseenNews();const b=$('#bellb');if(b)b.innerHTML=n?`<span class="badge">${n}</span>`:''}
 
 function render(keepScroll){
-  const y=scrollY; const v=viewKey(); renderNav(v);
-  const el=$('#view');
-  if(v==='descubra') {el.innerHTML=descubraHTML(); loadRails()}
+  const y=scrollY; const v=viewKey(); S.ui.io?.disconnect(); renderNav(v);
+  const el=$('#view'); let title=TITLES[v]||STATUSV[v]?.[0]||CATS[v]?.label||'Lista';
+  if(v==='descubra'){el.innerHTML=descubraHTML();loadRails()}
   else if(v==='estatisticas') el.innerHTML=statsHTML();
-  else el.innerHTML=libHTML(v);
-  document.title=(v==='descubra'?'Descubra':v==='estatisticas'?'Estatísticas':CATS[v]?.label||'Lista')+' · Claquete';
+  else if(v==='streamings'){el.innerHTML=streamingsHTML();lazyStreams()}
+  else{el.innerHTML=libHTML(v);const m=v.match(/^streaming-(.+)$/);if(m){title=findProvider(m[1])?.name||'Streaming';loadStreamSection(m[1],$('#stop'))}}
+  document.title=title+' · Claquete';
+  const sn=$('#subnav a[aria-current="page"]'); if(sn){const sc=$('#subnav');sc.scrollLeft=sn.offsetLeft-(sc.clientWidth-sn.offsetWidth)/2}
   if(keepScroll) scrollTo(0,y); else scrollTo(0,0);
 }
 let softT;const softRender=()=>{clearTimeout(softT);softT=setTimeout(()=>{if(!$('#modals').children.length)render(true)},400)};
 addEventListener('hashchange',()=>{S.ui.dq='';S.ui.dres=null;render()});
+addEventListener('resize',debounce(()=>renderNav(viewKey()),200));
+
+/* abrir / voltar ao app: sempre cai em "Assistindo". Só recarregar a página mantém a tela atual. */
+function goHome(){if(location.hash!=='#assistindo')history.replaceState(null,'','#assistindo');S.ui.dq='';S.ui.dres=null;render()}
+let hiddenAt=0;
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){hiddenAt=Date.now();return}
+  const away=hiddenAt&&Date.now()-hiddenAt>3000; hiddenAt=0;
+  if(away&&!$('#modals').children.length) goHome();
+});
+addEventListener('pageshow',e=>{if(e.persisted&&!$('#modals').children.length)goHome()});
 
 /* ---------- cartão de pôster ---------- */
-function cardHTML(it,{preview}={}){
+function posterImg(path,title,{sizes='170px',eager=false}={}){
+  if(!path) return '';
+  const fb=`onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:this.dataset.t}))" data-t="${esc(title)}"`;
+  const pr=eager?'fetchpriority="high"':'loading="lazy"';
+  if(path[0]!=='/') return `<img src="${esc(path)}" alt="" decoding="async" ${pr} onload="this.classList.add('ld')" ${fb}>`;
+  const b='https://image.tmdb.org/t/p/';
+  return `<img src="${b}w342${path}" srcset="${b}w185${path} 185w,${b}w342${path} 342w,${b}w500${path} 500w,${b}w780${path} 780w" sizes="${sizes}" alt="" decoding="async" ${pr} onload="this.classList.add('ld')" ${fb}>`;
+}
+function cardHTML(it,{preview,rank,eager,sizes}={}){
   const inLib=S.items.has(it.id); const cur=inLib?S.items.get(it.id):it; const c=CATS[cur.cat]; const sc=pubScore(cur);
   const isTv=cur.type==='tv'; const ucls=inLib?cur.status:'';
   const unseen=inLib&&(cur.news||[]).some(n=>!n.seen);
   const info=[cur.year||'', isTv&&cur.seasonsN?`${cur.seasonsN} temp.`:'', isTv&&cur.episodesN?`${cur.episodesN} eps`:'', !isTv&&cur.runtime?`${cur.runtime} min`:''].filter(Boolean).join(' · ');
   const pr=inLib&&isTv&&cur.status!=='quero'&&airedCount(cur)?`<div class="prog" title="${watchedCount(cur)} de ${airedCount(cur)} episódios"><i style="width:${Math.round(progressOf(cur)*100)}%"></i></div>`:'';
   return `<button class="card" style="--cc:${c.color}" data-act="${inLib?'open':'preview'}" data-id="${esc(cur.id)}" aria-label="${esc(cur.title)}">
-   <div class="poster">${cur.poster?`<img src="${esc(imgURL(cur.poster))}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'ph',textContent:this.dataset.t}))" data-t="${esc(cur.title)}">`:`<div class="ph">${esc(cur.title)}</div>`}
+   <div class="poster">${cur.poster?posterImg(cur.poster,cur.title,{sizes:sizes||'(max-width:860px) 46vw, 170px',eager}):`<div class="ph">${esc(cur.title)}</div>`}${rank?`<span class="rank">${rank}</span>`:''}
      <div class="tl"><span class="tag cat">${c.one}</span>${inLib?`<span class="up ${ucls}">${USTAT[cur.status]}</span>`:''}</div>
      <div class="tr">${unseen?'<span class="newdot" title="Novidade"></span>':''}${certHTML(cur)}</div>
      <div class="bl">${sc?`<span class="tag mono" title="${sc.src}">★ ${sc.v.toFixed(1)}</span>`:'<span></span>'}${preview&&!inLib?`<span class="addb" data-act="qadd" data-id="${esc(cur.id)}" role="button" aria-label="Adicionar" title="Adicionar à biblioteca">${ico('plus',18)}</span>`:(inLib&&cur.rating?`<span class="tag mono" title="Minha nota">Eu ${cur.rating}</span>`:'')}</div>
@@ -610,16 +787,25 @@ function cardHTML(it,{preview}={}){
 }
 
 /* ---------- biblioteca ---------- */
-const filt=k=>S.ui.filters[k]||(S.ui.filters[k]={q:'',status:'todos',genres:[],cstat:'',cert:'',list:'',from:'',to:'',sort:'added',open:false});
-function baseItems(v){const all=[...S.items.values()];if(CATS[v])return all.filter(i=>i.cat===v);if(v.startsWith('lista-'))return all.filter(i=>i.lists?.includes(v.slice(6)));return all}
-const SORTS={added:['Adicionados recentemente',(a,b)=>b.addedAt-a.addedAt],title:['Título (A–Z)',(a,b)=>a.title.localeCompare(b.title,'pt-BR')],
+const lastAct=it=>Math.max(0,...Object.values(it.watched||{}),it.startedAt?new Date(it.startedAt+'T12:00:00').getTime():0,it.addedAt||0);
+const filt=k=>S.ui.filters[k]||(S.ui.filters[k]={q:'',status:'todos',cat:'',genres:[],cstat:'',cert:'',list:'',from:'',to:'',sort:k==='assistindo'?'activity':'added',open:false});
+function baseItems(v){
+  const all=[...S.items.values()];
+  if(CATS[v]) return all.filter(i=>i.cat===v);
+  if(STATUSV[v]) return all.filter(i=>i.status===v);
+  if(v.startsWith('lista-')) return all.filter(i=>i.lists?.includes(v.slice(6)));
+  if(v.startsWith('streaming-')){const pid=v.slice(10);return all.filter(i=>i.providers?.some(p=>String(p.id)===pid))}
+  return all;
+}
+const SORTS={activity:['Atividade recente',(a,b)=>lastAct(b)-lastAct(a)],added:['Adicionados recentemente',(a,b)=>b.addedAt-a.addedAt],title:['Título (A–Z)',(a,b)=>a.title.localeCompare(b.title,'pt-BR')],
   relnew:['Lançamento (mais novos)',(a,b)=>(b.release||'').localeCompare(a.release||'')],relold:['Lançamento (mais antigos)',(a,b)=>(a.release||'9').localeCompare(b.release||'9')],
   pub:['Nota pública',(a,b)=>(pubScore(b)?.v||0)-(pubScore(a)?.v||0)],mine:['Minha nota',(a,b)=>(b.rating||0)-(a.rating||0)],
   next:['Próximo episódio',(a,b)=>(a.next?.air||'9999').localeCompare(b.next?.air||'9999')]};
 function applyFilters(v){
   const f=filt(v),q=f.q.trim().toLowerCase();
-  let list=baseItems(v).filter(it=>{
+  return baseItems(v).filter(it=>{
     if(f.status!=='todos'&&it.status!==f.status) return false;
+    if(f.cat&&it.cat!==f.cat) return false;
     if(q&&!(it.title.toLowerCase().includes(q)||(it.original||'').toLowerCase().includes(q))) return false;
     if(f.genres.length&&!f.genres.every(g=>it.genres?.includes(g))) return false;
     if(f.cstat&&it.cstat!==f.cstat) return false;
@@ -628,22 +814,27 @@ function applyFilters(v){
     if(f.from&&(it.release||'')<f.from) return false;
     if(f.to&&(!it.release||it.release>f.to)) return false;
     return true;
-  });
-  return list.sort(SORTS[f.sort][1]);
+  }).sort(SORTS[f.sort][1]);
 }
 function libHTML(v){
-  const f=filt(v),base=baseItems(v),isList=v.startsWith('lista-'); const list=isList?S.lists.find(l=>l.id===v.slice(6)):null;
-  if(isList&&!list) return `<div class="empty"><h3>Lista não encontrada</h3><a class="btn" href="#descubra">Voltar</a></div>`;
-  const c=CATS[v]; const cnt=s=>s==='todos'?base.length:base.filter(i=>i.status===s).length;
+  const f=filt(v),base=baseItems(v); const isList=v.startsWith('lista-'); const list=isList?S.lists.find(l=>l.id===v.slice(6)):null;
+  const pid=v.startsWith('streaming-')?v.slice(10):null; const prov=pid?findProvider(pid):null; const c=CATS[v]; const sv=STATUSV[v];
+  if(isList&&!list) return `<div class="empty"><h3>Lista não encontrada</h3><a class="btn" href="#assistindo">Voltar</a></div>`;
+  if(pid&&!prov) return `<div class="empty"><h3>Streaming não encontrado</h3><a class="btn" href="#streamings">Ver streamings</a></div>`;
+  const cnt=s=>s==='todos'?base.length:base.filter(i=>i.status===s).length;
+  const ccnt=k=>k===''?base.length:base.filter(i=>i.cat===k).length;
   const genres=[...new Set(base.flatMap(i=>i.genres||[]))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
   const certs=[...new Set(base.map(i=>i.cert).filter(Boolean))].sort((a,b)=>(CERT_ORDER.indexOf(a)+1||99)-(CERT_ORDER.indexOf(b)+1||99));
   const nf=(f.genres.length?1:0)+(f.cstat?1:0)+(f.cert?1:0)+(f.list?1:0)+(f.from||f.to?1:0);
-  const title=c?c.label:esc(list.name);
-  return `<div style="--cc:${c?c.color:'var(--fg)'}"><div class="stripe"></div>
-  <div class="vhead"><div><h1>${title}</h1><div class="sub">${base.length} título${base.length===1?'':'s'} · ${cnt('assistido')} assistidos · ${cnt('assistindo')} em andamento · ${cnt('quero')} a assistir</div></div>
-  <div class="tools">${isList?`<button class="btn" data-act="lists">${ico('list')}Listas</button>`:`<button class="btn" data-act="lists">${ico('list')}Listas</button>`}<button class="btn pri" data-act="add" data-cat="${c?v:''}" data-list="${isList?list.id:''}">${ico('plus')}Adicionar</button></div></div>
-  <div class="bar"><div class="search">${ico('search',16)}<input type="search" id="lq" placeholder="Buscar na biblioteca" value="${esc(f.q)}" aria-label="Buscar na biblioteca"></div>
-   <div class="seg" role="group" aria-label="Status">${['todos','assistindo','quero','assistido'].map(s=>`<button data-act="fstatus" data-v="${s}" aria-pressed="${f.status===s}">${s==='todos'?'Todos':USTAT[s]}<span class="n">${cnt(s)}</span></button>`).join('')}</div>
+  const title=c?c.label:sv?sv[0]:isList?esc(list.name):esc(prov.name);
+  const sub=c||isList||pid?`${base.length} título${base.length===1?'':'s'}${pid?' na minha biblioteca':''} · ${cnt('assistido')} assistidos · ${cnt('assistindo')} em andamento · ${cnt('quero')} a assistir`
+    :`${base.length} título${base.length===1?'':'s'} ${sv[1]}${base.length?' · '+Object.entries(CATS).map(([k,x])=>[x.short,ccnt(k)]).filter(x=>x[1]).map(x=>x.join(' ')).join(' · '):''}`;
+  const statusSeg=sv?'':`<div class="seg" role="group" aria-label="Status">${['todos','assistindo','quero','assistido'].map(x=>`<button data-act="fstatus" data-v="${x}" aria-pressed="${f.status===x}">${x==='todos'?'Todos':USTAT[x]}<span class="n">${cnt(x)}</span></button>`).join('')}</div>`;
+  const catSeg=c?'':`<div class="seg" role="group" aria-label="Categoria">${[['','Todos'],...Object.entries(CATS).map(([k,x])=>[k,x.short])].map(([k,l])=>`<button data-act="fcat" data-v="${k}" aria-pressed="${f.cat===k}">${l}<span class="n">${ccnt(k)}</span></button>`).join('')}</div>`;
+  return `<div style="--cc:${c?c.color:'var(--fg)'}">${pid?subnavHTML(v):''}<div class="stripe"></div>
+  <div class="vhead"><div class="row" style="gap:16px;flex-wrap:nowrap">${prov?plogo(prov,true):''}<div><h1>${title}</h1><div class="sub">${sub}</div></div></div>
+  <div class="tools"><button class="btn" data-act="lists">${ico('list')}Listas</button><button class="btn pri" data-act="add" data-cat="${c?v:''}" data-list="${isList?list.id:''}">${ico('plus')}Adicionar</button></div></div>
+  <div class="bar"><div class="search">${ico('search',16)}<input type="search" id="lq" placeholder="Buscar na biblioteca" value="${esc(f.q)}" aria-label="Buscar na biblioteca"></div>${statusSeg}${catSeg}
    <button class="btn" data-act="ftoggle" aria-expanded="${f.open}">${ico('filter',16)}Filtros${nf?` <span class="badge" style="background:var(--inv);color:var(--inv-fg)">${nf}</span>`:''}</button></div>
   ${f.open?`<div class="panel fpanel">
     <div><h5>Gêneros</h5><div class="chips">${genres.map(g=>`<button class="chip" data-act="fgenre" data-v="${esc(g)}" aria-pressed="${f.genres.includes(g)}">${esc(g)}</button>`).join('')||'<span class="muted">Sem gêneros ainda</span>'}</div></div>
@@ -653,14 +844,73 @@ function libHTML(v){
       <h5 style="margin-top:14px">Lista</h5><select data-f="list"><option value="">Todas</option>${S.lists.map(l=>`<option value="${l.id}" ${f.list===l.id?'selected':''}>${esc(l.name)}</option>`).join('')}</select></div>
     <div><h5>Ordenar por</h5><select data-f="sort">${Object.entries(SORTS).map(([k,[l]])=>`<option value="${k}" ${f.sort===k?'selected':''}>${l}</option>`).join('')}</select>
       <button class="btn sm" style="margin-top:14px" data-act="fclear">Limpar filtros</button></div></div>`:''}
-  <div id="lgrid">${gridHTML(v)}</div></div>`;
+  <div id="lgrid">${gridHTML(v)}</div>
+  ${pid?`<h2 class="h2s">Top 10 em ${esc(prov.name)}</h2><div id="stop"></div>`:''}</div>`;
 }
 function gridHTML(v){
-  const list=applyFilters(v),base=baseItems(v);
-  if(!base.length){const c=CATS[v];return `<div class="empty"><h3>${c?`Nenhum ${c.one.toLowerCase()} por aqui`:'Lista vazia'}</h3><p>${hasKey()?'Busque um título para começar ou veja sugestões na aba Descubra.':'Conecte sua chave do TMDB nas configurações para buscar capas, temporadas e notas automaticamente, ou adicione manualmente.'}</p>
-   <div class="row" style="justify-content:center"><button class="btn pri" data-act="add" data-cat="${c?v:''}">${ico('plus')}Adicionar</button><a class="btn" href="#descubra">Ir para Descubra</a>${hasKey()?'':'<button class="btn" data-act="settings">Configurar chaves</button>'}</div></div>`}
+  const list=applyFilters(v),base=baseItems(v); const c=CATS[v],sv=STATUSV[v],pid=v.startsWith('streaming-')?v.slice(10):null;
+  if(!base.length){
+    const msg=c?[`Nenhum ${c.one.toLowerCase()} por aqui`,hasKey()?'Busque um título para começar ou veja sugestões na aba Descubra.':'Conecte sua chave do TMDB nas configurações para buscar capas, temporadas e notas automaticamente, ou adicione manualmente.']
+      :sv?[`Nada em “${sv[0]}” ainda`,v==='assistindo'?'Quando você começar um título, ele aparece aqui. Marque episódios ou mude o status de qualquer título para “Assistindo”.':'Mude o status de um título para vê-lo aqui, ou descubra novos na aba Descubra.']
+      :pid?['Nada da sua biblioteca neste streaming',hasKey()?'Atualize os dados dos seus títulos para descobrir onde cada um está disponível. Abaixo, o que está em alta neste streaming.':'Configure o TMDB para saber onde cada título está disponível.']
+      :['Lista vazia','Abra um título e marque esta lista para ele aparecer aqui.'];
+    return `<div class="empty"><h3>${msg[0]}</h3><p>${msg[1]}</p>
+   <div class="row" style="justify-content:center"><button class="btn pri" data-act="add" data-cat="${c?v:''}">${ico('plus')}Adicionar</button><a class="btn" href="#descubra">Ir para Descubra</a>${pid&&hasKey()?'<button class="btn" data-act="refreshall">Atualizar dados</button>':''}${hasKey()?'':'<button class="btn" data-act="settings">Configurar chaves</button>'}</div></div>`}
   if(!list.length) return `<div class="empty"><h3>Nada com esses filtros</h3><button class="btn" data-act="fclear">Limpar filtros</button></div>`;
-  return `<div class="grid">${list.map(i=>cardHTML(i)).join('')}</div>`;
+  return `<div class="grid">${list.map((i,k)=>cardHTML(i,{eager:k<8})).join('')}</div>`;
+}
+
+/* ---------- streamings ---------- */
+const FALLBACK_PROV=[[8,'Netflix'],[119,'Amazon Prime Video'],[337,'Disney Plus'],[1899,'Max'],[307,'Globoplay'],[350,'Apple TV Plus'],[531,'Paramount Plus']].map(([id,name])=>({id,name,logo:null}));
+const PROV_WL=/^(netflix|amazon prime video|prime video|disney|max$|hbo max|globoplay|apple tv|paramount|star ?\+|star plus|telecine|discovery|claro|crunchyroll|mubi|mercado play)/i;
+async function loadProviders(){
+  const c=await DB.kget('providers');
+  if(c&&Date.now()-c.t<7*864e5&&c.list?.length){S.providers=c.list;return}
+  if(!hasKey()){S.providers=c?.list?.length?c.list:FALLBACK_PROV;return}
+  try{
+    const [t,m]=await Promise.all([tmdb('/watch/providers/tv',{watch_region:'BR'}),tmdb('/watch/providers/movie',{watch_region:'BR'})]);
+    const map=new Map();
+    for(const p of [...t.results,...m.results]){
+      if(!PROV_WL.test(p.provider_name)||/with ads|standard|basic|channel/i.test(p.provider_name)) continue;
+      const k=pkey(p.provider_name),pr=p.display_priorities?.BR??p.display_priority??999,prev=map.get(k);
+      if(!prev||pr<prev.pr) map.set(k,{id:p.provider_id,name:p.provider_name,logo:p.logo_path,pr});
+    }
+    const list=[...map.values()].sort((a,b)=>a.pr-b.pr).slice(0,12).map(({pr,...x})=>x);
+    S.providers=list.length?list:FALLBACK_PROV; await DB.kset('providers',{t:Date.now(),list:S.providers});
+  }catch{S.providers=c?.list?.length?c.list:FALLBACK_PROV}
+}
+const STREAM_CATS=['serie','filme','documentario','reality'];
+const STREAM_DEF={serie:[['/discover/tv',{without_genres:'99|10764'}]],filme:[['/discover/movie',{without_genres:'99'}]],documentario:[['/discover/movie',{with_genres:99}],['/discover/tv',{with_genres:99}]],reality:[['/discover/tv',{with_genres:10764}]]};
+async function streamTop(pid,cat){
+  const base={with_watch_providers:pid,watch_region:'BR',with_watch_monetization_types:'flatrate',sort_by:'popularity.desc','vote_count.gte':5};
+  const lists=await Promise.all(STREAM_DEF[cat].map(([path,p])=>tmdb(path,{...base,...p},{cache:true}).then(d=>d.results.map(x=>fromList(x,path.endsWith('tv')?'tv':'movie')))));
+  const seen=new Set();
+  return lists.flat().filter(x=>x.cat===cat&&!seen.has(x.id)&&seen.add(x.id)).sort((a,b)=>b.pop-a.pop).slice(0,10);
+}
+const railCards=items=>items.length?items.map((x,k)=>{S.cache.set('p:'+x.id,{t:Date.now(),d:x});return cardHTML(x,{preview:true,rank:k+1,eager:k<5,sizes:'148px'})}).join(''):'<span class="muted">Nada em alta nesta categoria.</span>';
+const railBox=(c,items)=>`<section class="rail" style="--cc:${CATS[c].color}"><h2>${CATS[c].label}<span class="muted" style="font-size:13px;font-weight:500">Top 10</span></h2><div class="rail-row" data-c="${c}">${items?railCards(items):'<div class="sk"></div>'.repeat(8)}</div></section>`;
+const streamBody=pid=>STREAM_CATS.map(c=>railBox(c,S.streamCache.get(pid+':'+c))).join('');
+async function loadStreamSection(pid,box){
+  if(!box) return;
+  if(String(pid).startsWith('u-')){box.innerHTML='<p class="muted">Streaming cadastrado manualmente: não há ranking disponível.</p>';return}
+  if(!hasKey()){box.innerHTML='<p class="muted">Configure a chave do TMDB para ver o top 10 deste streaming.</p>';return}
+  box.innerHTML=streamBody(pid);
+  await Promise.all(STREAM_CATS.map(async c=>{
+    const key=pid+':'+c; if(S.streamCache.has(key)) return;
+    try{const items=await streamTop(pid,c);S.streamCache.set(key,items);const row=box.querySelector(`.rail-row[data-c="${c}"]`);if(row)row.innerHTML=railCards(items)}
+    catch{const row=box.querySelector(`.rail-row[data-c="${c}"]`);if(row)row.innerHTML='<span class="muted">Não foi possível carregar.</span>'}
+  }));
+}
+function streamingsHTML(){
+  const provs=allProviders();
+  return `<div class="stripe"></div><div class="vhead"><div><h1>Streamings</h1><div class="sub">Top 10 de cada categoria em cada streaming no Brasil. Toque no nome para ver o que da sua biblioteca está lá.</div></div></div>
+  ${hasKey()?'':`<div class="notice"><div>${ico('gear',22)}</div><div><b>Conecte o TMDB para ver os rankings</b>Os top 10 vêm do catálogo de streamings do TMDB (dados JustWatch).<div class="row" style="margin-top:10px"><button class="btn pri sm" data-act="settings">Abrir configurações</button></div></div></div>`}
+  ${subnavHTML('streamings')}
+  ${provs.map(p=>`<section class="strm" data-pid="${esc(p.id)}"><header class="strm-h"><a href="#streaming-${esc(p.id)}" class="strm-t">${plogo(p,true)}<h2>${esc(p.name)}</h2></a><span class="muted">${provCount(p.id)} na minha biblioteca</span><a class="btn sm" href="#streaming-${esc(p.id)}">Abrir ${ico('chevron',14)}</a></header><div class="strm-b">${STREAM_CATS.every(c=>S.streamCache.has(p.id+':'+c))?streamBody(p.id):'<div class="rail-row"><div class="sk wide"></div></div>'}</div></section>`).join('')}`;
+}
+function lazyStreams(){
+  S.ui.io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){S.ui.io.unobserve(e.target);loadStreamSection(e.target.dataset.pid,e.target.querySelector('.strm-b'))}}),{rootMargin:'500px'});
+  $$('.strm').forEach(x=>S.ui.io.observe(x));
 }
 
 /* ---------- descubra ---------- */
@@ -691,7 +941,7 @@ const manualCTA=q=>`<div class="notice" style="margin-top:18px;align-items:cente
 function resultsHTML(res,q){
   if(res==='loading') return `<div class="rail-row">${'<div class="sk"></div>'.repeat(8)}</div>`;
   if(!res.length) return `<div class="empty"><h3>Nada encontrado${q?` para “${esc(q)}”`:''}</h3><p>Tente o nome original em outro idioma ou cadastre o título manualmente.</p><button class="btn pri" data-act="manual" data-q="${esc(q||'')}">${ico('plus')}Adicionar manualmente</button></div>`;
-  return `<div class="grid">${res.map(r=>{S.cache.set('p:'+r.id,{t:Date.now(),d:r});return cardHTML(r,{preview:true})}).join('')}</div>${manualCTA(q)}`;
+  return `<div class="grid">${res.map((r,k)=>{S.cache.set('p:'+r.id,{t:Date.now(),d:r});return cardHTML(r,{preview:true,eager:k<8})}).join('')}</div>${manualCTA(q)}`;
 }
 async function runSearch(q,targetSel){
   q=q.trim(); const box=$(targetSel); if(!box) return;
@@ -699,7 +949,7 @@ async function runSearch(q,targetSel){
   if(!hasKey()){box.innerHTML=`<div class="empty"><h3>Sem chave do TMDB</h3><div class="row" style="justify-content:center"><button class="btn pri" data-act="manual" data-q="${esc(q)}">Adicionar manualmente</button><button class="btn" data-act="settings">Configurar</button></div></div>`;return}
   box.innerHTML=resultsHTML('loading'); $('#rails')?.setAttribute('hidden','');
   try{const d=await tmdb('/search/multi',{query:q,include_adult:'false'});
-    const res=d.results.filter(r=>r.media_type==='movie'||r.media_type==='tv').map(r=>fromList(r));
+    const res=d.results.filter(r=>r.media_type==='movie'||r.media_type==='tv').map(r=>fromList(r)).sort((a,b)=>(b.release||'').localeCompare(a.release||''));
     if(targetSel==='#dres') S.ui.dres=res; box.innerHTML=resultsHTML(res,q);
   }catch(e){box.innerHTML=`<div class="empty"><h3>Não foi possível buscar</h3><p>${e.code===401?'Chave do TMDB inválida.':'Verifique sua conexão e tente de novo.'} Você pode cadastrar o título manualmente.</p><button class="btn pri" data-act="manual" data-q="${esc(q)}">${ico('plus')}Adicionar manualmente</button></div>`}
 }
@@ -724,7 +974,7 @@ async function loadRails(){
     const sec=$('#rail-'+r.id); if(!sec) return;
     if(!items.length){sec.remove();return}
     items.forEach(x=>S.cache.set('p:'+x.id,{t:Date.now(),d:x}));
-    sec.querySelector('.rail-row').innerHTML=items.map(x=>cardHTML(x,{preview:true})).join('');
+    sec.querySelector('.rail-row').innerHTML=items.map((x,k)=>cardHTML(x,{preview:true,eager:k<6,sizes:'148px'})).join('');
   }));
 }
 
@@ -758,10 +1008,10 @@ function detailHTML(it,inLib){
    <div class="sec"><h4>Listas</h4><div class="chips">${S.lists.map(l=>`<button class="chip" data-act="dlist" data-v="${l.id}" aria-pressed="${!!it.lists?.includes(l.id)}">${esc(l.name)}</button>`).join('')}<button class="chip" data-act="newlist">${ico('plus',12)} Nova lista</button></div></div>
    <div class="sec"><h4>Anotações</h4><textarea data-d="notes" placeholder="Onde assisti, o que achei, quem indicou…">${esc(it.notes||'')}</textarea></div>`:`
    <div class="sec"><div class="row"><button class="btn pri" data-act="padd" data-v="quero">${ico('plus')}Quero assistir</button><button class="btn" data-act="padd" data-v="assistindo">Assistindo</button><button class="btn" data-act="padd" data-v="assistido">Já assisti</button></div></div>`;
-  const seasons=inLib&&tv&&hasEps(it)?`<div class="sec"><h4>Temporadas e episódios</h4>${it.seasons.map(s=>seasonHTML(it,s)).join('')}</div>`:(tv&&it.seasonMeta?.length&&!inLib?'':'');
+  const seasons=inLib&&tv?`<div class="sec"><h4>Temporadas e episódios</h4>${srcNote(it)}${hasEps(it)?it.seasons.map(x=>seasonHTML(it,x)).join(''):`<p class="muted" style="margin:0 0 10px">${it.manual?'Informe os episódios por temporada em “Editar informações” para marcar um a um.':'Os episódios aparecem aqui depois da primeira atualização.'}</p>`}<div class="row" style="margin-top:12px"><button class="btn sm" data-act="dxadd">${ico('plus',14)}Adicionar temporada</button></div></div>`:'';
   return `${xbtn}
-  <div class="dhero ${it.backdrop?'':'nobd'}" style="${it.backdrop?`background-image:url('${esc(imgURL(it.backdrop,'w1280'))}')`:''}">
-   <div class="dtop"><div class="poster" style="--cc:${c.color}">${it.poster?`<img src="${esc(imgURL(it.poster,'w500'))}" alt="Capa de ${esc(it.title)}">`:`<div class="ph">${esc(it.title)}</div>`}</div>
+  <div class="dhero ${it.backdrop?'':'nobd'}" style="${it.backdrop?`background-image:url('${esc(imgURL(it.backdrop,innerWidth>860?'w1280':'w780'))}')`:''}">
+   <div class="dtop"><div class="poster" style="--cc:${c.color}">${it.poster?posterImg(it.poster,it.title,{sizes:'(max-width:860px) 108px, 150px',eager:true}):`<div class="ph">${esc(it.title)}</div>`}</div>
    <div style="min-width:0"><div class="row" style="margin-bottom:8px"><span class="tag cat" style="--cc:${c.color}">${c.one}</span>${certHTML(it,true)}${it.certCountry==='US'?'<span class="muted" style="font-size:12px">classif. EUA</span>':''}</div>
    <h2>${esc(it.title)}</h2>${it.original&&it.original!==it.title?`<div class="orig">${esc(it.original)}</div>`:''}
    <div class="meta">${meta}</div><div class="meta">${(it.genres||[]).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div></div></div></div>
@@ -770,23 +1020,44 @@ function detailHTML(it,inLib){
    <div class="sec"><h4>Classificação do conteúdo</h4><div class="scores">${sbox('IMDb',sc.imdb)}${sbox('Trakt',sc.trakt)}${sbox('TMDB',sc.tmdb)}${sbox('Nota informada',sc.manual)}${it.rt?`<div class="score"><b>${esc(it.rt)}</b><small>Rotten Tomatoes</small></div>`:''}${inLib&&it.rating?`<div class="score"><b>${it.rating}</b><small>Minha nota</small></div>`:''}
     ${!sc.imdb&&!sc.trakt&&!sc.tmdb&&!sc.manual?'<span class="muted">Sem notas ainda.</span>':''}</div>
     ${inLib&&!S.settings.omdb&&!it.manual?'<div class="muted" style="font-size:12.5px;margin-top:8px">Para ver a nota do IMDb, adicione uma chave do OMDb nas configurações.</div>':''}</div>
-   ${it.overview?`<div class="sec"><h4>Sinopse</h4><p style="margin:0;max-width:75ch">${esc(it.overview)}</p></div>`:''}
+   ${whereHTML(it)}${it.overview?`<div class="sec"><h4>Sinopse</h4><p style="margin:0;max-width:75ch">${esc(it.overview)}</p></div>`:''}
    ${usr}${seasons}
    <div class="sec"><div class="row">${links}${inLib&&!it.manual?`<button class="btn sm" data-act="drefresh">${ico('refresh',14)}Atualizar dados</button>`:''}${inLib&&it.manual?`<button class="btn sm" data-act="dedit">Editar informações</button>`:''}${inLib?`<button class="btn sm danger" data-act="dremove" style="margin-left:auto">${ico('trash',14)}Remover</button>`:''}</div>
     ${inLib&&it.updatedAt?`<div class="muted" style="font-size:12.5px;margin-top:8px">Dados atualizados em ${fmtDate(dateOf(it.updatedAt))} às ${new Date(it.updatedAt).toTimeString().slice(0,5)}${it.traktErr?` · Trakt: ${esc(it.traktErr)}`:''}${it.omdbErr?` · OMDb: ${esc(it.omdbErr)}`:''}</div>`:''}</div>
   </div>`;
 }
+const OFFICIAL={netflix:'https://www.netflix.com/search?q=',primevideo:'https://www.primevideo.com/search/?phrase=',globoplay:'https://globoplay.globo.com/busca/?q=',appletv:'https://tv.apple.com/br/search?term=',disney:'https://www.disneyplus.com/pt-br/search?q=',paramount:'https://www.paramountplus.com/br/search/?q=',max:'https://play.max.com/search?q=',hbomax:'https://play.max.com/search?q='};
+const officialURL=(name,title)=>{const b=OFFICIAL[pkey(name)];return b?b+encodeURIComponent(title):''};
+function whereHTML(it){
+  const prov=it.providers||[]; if(!prov.length&&!it.watchLink) return '';
+  const off=prov.map(p=>({p,u:officialURL(p.name,it.title)})).find(x=>x.u);
+  return `<div class="sec"><h4>Onde assistir (Brasil)</h4><div class="chips">${prov.map(p=>`<a class="chip prov" href="#streaming-${esc(p.id)}" data-act="close">${plogo(p)}${esc(p.name)}</a>`).join('')||'<span class="muted">Nenhum streaming por assinatura listado.</span>'}</div>
+  <div class="row" style="margin-top:10px">${off?`<a class="btn sm" target="_blank" rel="noopener" href="${esc(off.u)}">Conferir no ${esc(off.p.name)}</a>`:''}${it.watchLink?`<a class="btn sm" target="_blank" rel="noopener" href="${esc(it.watchLink)}">Todas as opções (JustWatch)</a>`:''}</div></div>`;
+}
+function srcNote(it){
+  const s=it.sources; if(!s) return '';
+  const parts=[['TMDB',s.tmdb],['TVmaze',s.tvmaze],['Trakt',s.trakt]].filter(x=>x[1]).map(([n,x])=>`${n}: ${x.seasons} temp.`);
+  return parts.length?`<div class="srcnote" style="margin-bottom:10px">Fontes consultadas · ${parts.join(' · ')}${s.tvmaze?.url?` · <a href="${esc(s.tvmaze.url)}" target="_blank" rel="noopener">ver no TVmaze</a>`:''}. A temporada mais nova aparece mesmo que só uma das fontes já a liste. Se ainda faltar alguma, adicione-a abaixo.</div>`:'';
+}
+function openAddSeason(it){
+  const last=Math.max(0,...(it.seasons||[]).map(x=>x.n));
+  const ov=openModal('sm',`<form class="sbody" id="xform">${xbtn}<div class="shead"><h2>Adicionar temporada</h2></div><p class="muted" style="margin:-6px 0 14px;font-size:14px">Use quando as fontes ainda não listam uma temporada que já saiu no streaming. Se as fontes a trouxerem depois, a sua é substituída automaticamente.</p>
+   <div class="kv"><label class="field"><span>Temporada nº</span><input type="number" name="n" min="1" value="${last+1}" required></label><label class="field"><span>Episódios</span><input type="number" name="count" min="1" required></label>
+   <label class="field" style="grid-column:1/-1"><span>Data de estreia</span><input type="date" name="air" required></label>
+   <label class="field" style="grid-column:1/-1"><span>Intervalo entre episódios (dias; 0 = todos no mesmo dia)</span><input type="number" name="gap" min="0" value="7"></label></div>
+   <div class="row" style="margin-top:16px"><button class="btn pri" type="submit">Adicionar</button></div></form>`); ov._for=it.id;
+}
 function seasonHTML(it,s){
   const t=todayISO(); const aired=s.eps.filter(e=>e.air&&e.air<=t); const w=s.eps.filter(e=>it.watched?.[epKey(s.n,e.e)]).length; const open=S.ui.openSeasons.has(it.id+':'+s.n);
-  const rs=s.eps.map(e=>e.tr??e.r).filter(v=>v!=null); const avg=rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(1):null;
-  const rows=open?`<ul class="eps">${s.eps.map(e=>{const k=epKey(s.n,e.e);const on=!!it.watched?.[k];const fut=!e.air||e.air>t;const er=e.tr!=null?{v:e.tr,src:'Trakt'}:e.r!=null?{v:e.r,src:'TMDB'}:null;const mine=it.epRatings?.[k]||'';
+  const rs=s.eps.map(e=>e.tr??e.r??e.tm).filter(v=>v!=null); const avg=rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(1):null;
+  const rows=open?`<ul class="eps">${s.eps.map(e=>{const k=epKey(s.n,e.e);const on=!!it.watched?.[k];const fut=!e.air||e.air>t;const er=e.tr!=null?{v:e.tr,src:'Trakt'}:e.r!=null?{v:e.r,src:'TMDB'}:e.tm!=null?{v:e.tm,src:'TVmaze'}:null;const mine=it.epRatings?.[k]||'';
     return `<li class="ep ${on?'on':''} ${fut?'fut':''}"><button class="chk" data-act="dep" data-s="${s.n}" data-e="${e.e}" aria-pressed="${on}" aria-label="Marcar S${s.n}E${e.e}" ${fut?'disabled':''}>${ico('check',15)}</button>
      <div class="nm"><b>${e.e}. ${esc(e.name||'Episódio '+e.e)}</b><small>S${pad(s.n)}E${pad(e.e)} · ${e.air?fmtDate(e.air):'sem data'}${fut&&e.air?' · em breve':''}</small></div>
      <span class="er" title="${er?'Nota '+er.src:'Sem nota'}">${er?'★ '+er.v.toFixed(1):'—'}</span>
      <select data-act="deprate" data-k="${k}" aria-label="Minha nota do episódio"><option value="">Eu</option>${[1,2,3,4,5,6,7,8,9,10].map(n=>`<option value="${n}" ${+mine===n?'selected':''}>${n}</option>`).join('')}</select></li>`}).join('')}</ul>`:'';
   return `<div class="season"><button class="shd" data-act="dseason" data-n="${s.n}" aria-expanded="${open}"><span style="transform:rotate(${open?90:0}deg);display:grid">${ico('chevron',16)}</span><span class="t">Temporada ${s.n}</span><span class="muted" style="font-size:13px">${s.eps.length||s.count} eps${s.air?' · '+s.air.slice(0,4):''}</span>
    <span class="p">${avg?`<span title="Média da temporada">★ ${avg}</span>`:''}<span>${w}/${aired.length}</span><span class="prog"><i style="width:${aired.length?Math.round(w/aired.length*100):0}%;background:var(--cc,var(--fg))"></i></span></span></button>
-   ${open?`<div style="padding:8px 12px;display:flex;gap:8px"><button class="btn sm" data-act="dmark" data-n="${s.n}" data-on="1">Marcar temporada como vista</button><button class="btn sm ghost" data-act="dmark" data-n="${s.n}" data-on="0">Limpar</button></div>`:''}${rows}</div>`;
+   ${open?`<div style="padding:8px 12px;display:flex;gap:8px"><button class="btn sm" data-act="dmark" data-n="${s.n}" data-on="1">Marcar temporada como vista</button><button class="btn sm ghost" data-act="dmark" data-n="${s.n}" data-on="0">Limpar</button>${s.manual?`<button class="btn sm danger ghost" data-act="dxdel" data-n="${s.n}">Remover temporada</button>`:''}</div>`:''}${rows}</div>`;
 }
 function openDetail(id){
   const it=S.items.get(id); if(!it) return; (it.news||[]).forEach(n=>n.seen=true); saveItem(it); updateBell();
@@ -799,7 +1070,7 @@ function refreshDetails(){
 async function openPreview(id){
   const base=S.cache.get('p:'+id)?.d; if(!base) return;
   const el=openModal('',`${xbtn}<div class="sbody"><div class="sk" style="width:120px"></div></div>`);
-  let full={...base}; try{const d=await tmdb(`/${base.type}/${base.tmdb}`,{append_to_response:base.type==='tv'?'external_ids,content_ratings':'external_ids,release_dates'});const o=normDetail(base.type,d);const {catAuto,seasonMeta,...rest}=o;full={...base,...rest,cat:base.cat,scores:{...base.scores,...o.scores}}}catch{}
+  let full={...base}; try{const d=await tmdb(`/${base.type}/${base.tmdb}`,{append_to_response:(base.type==='tv'?'external_ids,content_ratings':'external_ids,release_dates')+',watch/providers'});const o=normDetail(base.type,d);const {catAuto,seasonMeta,...rest}=o;full={...base,...rest,cat:base.cat,scores:{...base.scores,...o.scores}}}catch{}
   el._item=full; S.cache.set('p:'+id,{t:Date.now(),d:full});
   if(!el.isConnected) return; el.firstElementChild.innerHTML=detailHTML(full,false);
 }
@@ -834,6 +1105,7 @@ function openManual(cat,pre={},editId){
    <label class="field"><span>Total de episódios</span><input type="number" name="eps" min="0" value="${esc(v.episodesN||'')}"></label>
    <label class="field" style="grid-column:1/-1"><span>Episódios por temporada (opcional, ex.: 10, 8, 12). Cria a lista para marcar episódio por episódio</span><input type="text" name="epsper" inputmode="numeric" placeholder="10, 8, 12" value="${esc(epsPer)}"></label>
    <label class="field" style="grid-column:1/-1"><span>Gêneros (separe por vírgula)</span><input type="text" name="genres" value="${esc((v.genres||[]).join(', '))}"></label>
+   <label class="field" style="grid-column:1/-1"><span>Streaming onde assiste (separe por vírgula)</span><input type="text" name="streams" placeholder="Netflix, Globoplay" value="${esc((v.providers||[]).map(x=>x.name).join(', '))}"></label>
    <label class="field" style="grid-column:1/-1"><span>Sinopse</span><textarea name="overview">${esc(v.overview||'')}</textarea></label>
    <label class="field"><span>Endereço da capa (URL)</span><input type="url" name="poster" placeholder="https://" value="${esc(/^https?:/.test(v.poster||'')?v.poster:'')}"></label>
    <label class="field"><span>Ou envie a imagem da capa</span><input type="file" name="posterfile" accept="image/*"></label>
@@ -866,6 +1138,7 @@ function openSettings(){
    <div class="sec"><h4>Fontes de dados</h4><div class="kv" style="grid-template-columns:1fr">
     <label class="field"><span>TMDB: chave de API (v3) ou token de leitura (v4). Capas, temporadas, episódios, gêneros e classificação indicativa</span><input type="password" name="tmdb" value="${esc(s.tmdb)}" autocomplete="off" placeholder="Obrigatória"></label>
     <label class="field"><span>Trakt: Client ID. Notas, status e notas de cada episódio (opcional)</span><input type="password" name="trakt" value="${esc(s.trakt)}" autocomplete="off"></label>
+    <label class="field"><span>TVmaze (sem chave): confere temporadas e episódios novos, calendário e emissora ou streaming</span><select name="tvmaze"><option value="1" ${s.tvmaze!==false?'selected':''}>Ativado</option><option value="0" ${s.tvmaze===false?'selected':''}>Desativado</option></select></label>
     <label class="field"><span>OMDb: chave de API. Nota e votos do IMDb, Rotten Tomatoes (opcional)</span><input type="password" name="omdb" value="${esc(s.omdb)}" autocomplete="off"></label></div>
     <p class="muted" style="font-size:12.5px;margin:10px 0 0">As chaves ficam apenas neste navegador. Chaves gratuitas: themoviedb.org/settings/api, trakt.tv/oauth/applications, omdbapi.com/apikey.aspx</p></div>
    <div class="sec" style="margin-top:20px"><h4>Preferências</h4><div class="kv"><label class="field"><span>Tema</span><select name="theme"><option value="system" ${s.theme==='system'?'selected':''}>Automático</option><option value="light" ${s.theme==='light'?'selected':''}>Claro</option><option value="dark" ${s.theme==='dark'?'selected':''}>Escuro</option></select></label>
@@ -991,6 +1264,9 @@ const ACT={
  padd:(el)=>{const ov=el.closest('.overlay');const base=ov._item;const it=addItem(base,el.dataset.v);closeModal(ov);if(it)toast(`“${base.title}” adicionado`)},
  add:(el)=>openAdd(el.dataset.cat||'',el.dataset.list||''),
  manual:(el)=>{const ov=$$('#modals .overlay').find(o=>o._cat!==undefined);openManual(ov?._cat||'',{title:el.dataset.q||$('#aq')?.value||$('#dq')?.value||''})},
+ fcat:(el)=>{filt(viewKey()).cat=el.dataset.v;render(true)},
+ dxadd:(el)=>{const it=curItem(el);if(it)openAddSeason(it)},
+ dxdel:(el)=>{const it=curItem(el);const n=+el.dataset.n;it.extraSeasons=(it.extraSeasons||[]).filter(x=>x.n!==n);it.seasons=it.seasons.filter(x=>!(x.n===n&&x.manual));for(const k of Object.keys(it.watched||{}))if(k.startsWith(n+'x'))delete it.watched[k];recount(it);reconcile(it);saveItem(it);refreshDetails()},
  dedit:(el)=>{const it=curItem(el);if(it)openManual('',{},it.id)},
  lists:()=>openLists(),
  news:()=>openNews(),
@@ -1003,7 +1279,7 @@ const ACT={
  fgenre:(el)=>{const f=filt(viewKey()),g=el.dataset.v;f.genres=f.genres.includes(g)?f.genres.filter(x=>x!==g):[...f.genres,g];render(true)},
  fcstat:(el)=>{const f=filt(viewKey());f.cstat=f.cstat===el.dataset.v?'':el.dataset.v;render(true)},
  fcert:(el)=>{const f=filt(viewKey());f.cert=f.cert===el.dataset.v?'':el.dataset.v;render(true)},
- fclear:()=>{const f=filt(viewKey());Object.assign(f,{q:'',status:'todos',genres:[],cstat:'',cert:'',list:'',from:'',to:'',sort:'added'});render(true)},
+ fclear:()=>{const f=filt(viewKey());Object.assign(f,{q:'',status:'todos',cat:'',genres:[],cstat:'',cert:'',list:'',from:'',to:'',sort:viewKey()==='assistindo'?'activity':'added'});render(true)},
  scat:(el)=>{S.ui.scat=el.dataset.v;render(true)},
  ssort:(el)=>{const k=el.dataset.k;if(S.ui.ssort===k)S.ui.ssdir*=-1;else{S.ui.ssort=k;S.ui.ssdir=1}render(true)},
  tblmore:()=>{S.ui.tbl+=200;render(true)},
@@ -1025,6 +1301,7 @@ const ACT={
  testkeys:async()=>{const out=$('#testout');const f=$('#sform');const old={...S.settings};S.settings.tmdb=f.tmdb.value.trim();S.settings.trakt=f.trakt.value.trim();S.settings.omdb=f.omdb.value.trim();out.textContent='Testando…';const r=[];
    try{await tmdb('/configuration');r.push('TMDB ok')}catch(e){r.push('TMDB '+(e.code===401?'chave inválida':'sem resposta'))}
    if(S.settings.trakt){try{await traktGet('/shows/tt0903747?extended=full');r.push('Trakt ok')}catch{r.push('Trakt falhou')}}
+   try{const t=await tvm('/lookup/shows?imdb=tt0903747');r.push(t?'TVmaze ok':'TVmaze sem resposta')}catch{r.push('TVmaze falhou')}
    if(S.settings.omdb){try{const d=await omdbGet('tt0903747');r.push(d?'OMDb ok':'OMDb chave inválida')}catch{r.push('OMDb falhou')}}
    S.settings=old;out.textContent=r.join(' · ')}
 };
@@ -1059,7 +1336,8 @@ document.addEventListener('submit',async ev=>{
   if(f.id==='lform'){const n=$('#lname').value.trim();if(!n)return;S.lists.push({id:uid(),name:n,createdAt:Date.now()});await saveMeta();$$('.overlay').forEach(o=>o._draw?.());render(true)}
   else if(f.id==='nlform'){const ov=f.closest('.overlay');const n=$('#nlname').value.trim();if(!n)return;const l={id:uid(),name:n,createdAt:Date.now()};S.lists.push(l);await saveMeta();const it=S.items.get(ov._for);it.lists=[...(it.lists||[]),l.id];saveItem(it);closeModal(ov);refreshDetails();render(true)}
   else if(f.id==='lrform'){const ov=f.closest('.overlay');const l=S.lists.find(x=>x.id===ov._lid);l.name=$('#lrname').value.trim()||l.name;await saveMeta();closeModal(ov);$$('.overlay').forEach(o=>o._draw?.());render(true)}
-  else if(f.id==='sform'){S.settings.tmdb=f.tmdb.value.trim();S.settings.trakt=f.trakt.value.trim();S.settings.omdb=f.omdb.value.trim();S.settings.theme=f.theme.value;S.settings.auto=f.auto.value==='1';await saveMeta();applyTheme();closeModal(f.closest('.overlay'));toast('Configurações salvas');await ensureGenres();render(true);autoUpdate()}
+  else if(f.id==='xform'){const ov=f.closest('.overlay');const it=S.items.get(ov._for);const d=Object.fromEntries(new FormData(f));it.extraSeasons=(it.extraSeasons||[]).filter(x=>x.n!==+d.n);it.extraSeasons.push({n:+d.n,count:+d.count,air:d.air,gap:+d.gap||0});it.seasons=it.seasons||[];applyExtra(it);recount(it);reconcile(it);await saveItem(it);S.ui.openSeasons.add(it.id+':'+d.n);closeModal(ov);refreshDetails();render(true);toast(`Temporada ${d.n} adicionada`)}
+  else if(f.id==='sform'){S.settings.tmdb=f.tmdb.value.trim();S.settings.trakt=f.trakt.value.trim();S.settings.omdb=f.omdb.value.trim();S.settings.theme=f.theme.value;S.settings.tvmaze=f.tvmaze.value==='1';S.settings.auto=f.auto.value==='1';await saveMeta();applyTheme();closeModal(f.closest('.overlay'));toast('Configurações salvas');await Promise.all([ensureGenres(),loadProviders()]);render(true);autoUpdate()}
   else if(f.id==='mform'){
     const d=Object.fromEntries(new FormData(f)); const editId=f.dataset.edit; const edit=editId?S.items.get(editId):null; const tv=d.type==='tv';
     let poster=(d.poster||'').trim()||null; const file=f.posterfile?.files?.[0]; if(file){const pd=await fileToPoster(file);if(pd)poster=pd}
@@ -1067,7 +1345,7 @@ document.addEventListener('submit',async ev=>{
     const release=d.release||''; const runtime=+d.runtime||null;
     const seasons=tv&&(d.epsper||'').trim()?manualSeasons(d.epsper,release,runtime):null;
     const fields={title:d.title.trim(),original:(d.original||'').trim(),type:d.type,overview:(d.overview||'').trim(),poster,genres:(d.genres||'').split(',').map(x=>x.trim()).filter(Boolean),release,year:release?+release.slice(0,4):null,runtime,cstat:d.cstat,
-      seasonsN:tv?(seasons?seasons.length:+d.seasons||0):0,episodesN:tv?(seasons?seasons.reduce((a,x)=>a+x.eps.length,0):+d.eps||0):0,cert:d.cert||null,certCountry:d.cert?'BR':''};
+      seasonsN:tv?(seasons?seasons.length:+d.seasons||0):0,episodesN:tv?(seasons?seasons.reduce((a,x)=>a+x.eps.length,0):+d.eps||0):0,cert:d.cert||null,certCountry:d.cert?'BR':'',providers:(d.streams||'').split(',').map(x=>x.trim()).filter(Boolean).map(resolveProvider)};
     const pub=parseFloat(String(d.pub||'').replace(',','.')); const rating=+d.rating||null;
     if(edit){
       Object.assign(edit,fields,{cat:d.cat}); edit.scores=edit.scores||{}; if(pub>0)edit.scores.manual={v:Math.min(10,pub),n:0};else delete edit.scores.manual;
@@ -1092,7 +1370,10 @@ function applyTheme(){const t=S.settings.theme;if(t==='system')document.document
   const ok=await DB.open(); if(!ok) setTimeout(()=>toast('Armazenamento indisponível: os dados não serão salvos neste navegador'),500);
   const meta=await DB.kget('meta'); if(meta){Object.assign(S.settings,meta.settings||{});S.lists=meta.lists||[];S.log=meta.log||[]}
   for(const it of await DB.all()) S.items.set(it.id,it);
-  applyTheme(); await ensureGenres(); render();
+  applyTheme();
+  const nt=performance.getEntriesByType?.('navigation')?.[0]; const reloaded=nt?nt.type==='reload':performance.navigation?.type===1;
+  if(!reloaded) history.replaceState(null,'','#assistindo');
+  await Promise.all([ensureGenres(),loadProviders()]); render();
   if(!hasKey()&&!S.items.size) setTimeout(()=>{if(!$('#modals').children.length)openSettings()},600);
   autoUpdate();
   if('serviceWorker' in navigator&&location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(()=>{});
