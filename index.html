@@ -526,7 +526,7 @@ async function ensureGenres(){
 }
 
 /* Atualiza um item com tudo o que as fontes oferecem */
-const DV=4; /* versão dos dados: ao subir, todos os títulos são reatualizados */
+const DV=3; /* versão dos dados: ao subir, todos os títulos são reatualizados */
 let tvmLast=0;
 async function tvm(path){
   for(let t=0;t<2;t++){
@@ -552,12 +552,12 @@ function mergeExtra(it,list,label){
   const maxN=Math.max(0,...it.seasons.map(s=>s.n));
   for(const key of Object.keys(bySeason)){
     const n=+key, eps=bySeason[key].sort((a,b)=>a.e-b.e); let s=it.seasons.find(x=>x.n===n);
-    const mk=x=>({e:x.e,name:x.name||('Episódio '+x.e),air:x.air||'',r:null,rt:x.rt||null,tm:x.rating??null,ti:null,src:label});
+    const mk=x=>({e:x.e,name:x.name||('Episódio '+x.e),air:x.air||'',r:null,rt:x.rt||null,tm:x.rating??null,ti:x.img||null,src:label});
     if(!s){it.seasons.push({n,count:eps.length,air:eps.map(e=>e.air).filter(Boolean).sort()[0]||'',name:'T'+n,eps:eps.map(mk),src:label});continue}
     if(!s.eps.length){s.eps=eps.map(mk);s.count=eps.length;continue}
     const top=Math.max(0,...s.eps.map(y=>y.e));
     for(const x of eps){const ee=s.eps.find(y=>y.e===x.e);
-      if(ee){if(!ee.air&&x.air)ee.air=x.air;if(ee.rt==null&&x.rt)ee.rt=x.rt;if(x.rating!=null&&ee.tm==null)ee.tm=x.rating}
+      if(ee){if(!ee.air&&x.air)ee.air=x.air;if(!ee.ti&&x.img)ee.ti=x.img;if(ee.rt==null&&x.rt)ee.rt=x.rt;if(x.rating!=null&&ee.tm==null)ee.tm=x.rating}
       else if(n===maxN&&x.e>top) s.eps.push(mk(x));}
     s.eps.sort((a,b)=>a.e-b.e);
   }
@@ -1153,10 +1153,11 @@ function epThumb(e){
   const b='https://image.tmdb.org/t/p/';
   const fb=`onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'eph',textContent:'${e.e}'}))"`;
   if(e.st) return `<div class="ept"><img src="${b}w300${e.st}" srcset="${b}w185${e.st} 185w,${b}w300${e.st} 300w" sizes="(max-width:860px) 84px,112px" alt="" loading="lazy" decoding="async" onload="this.classList.add('ld')" ${fb}></div>`;
+  if(e.ti) return `<div class="ept"><img src="${esc(e.ti)}" alt="" loading="lazy" decoding="async" onload="this.classList.add('ld')" ${fb}></div>`;
   return `<div class="ept"><span class="eph">${e.e}</span></div>`;
 }
 /* ---------- carrossel de capas e fundos ---------- */
-const SRC_ORDER=['Atual','Enviada','TMDB','IMDb','Fanart'];
+const SRC_ORDER=['Atual','Enviada','TMDB','TVmaze','IMDb','Fanart'];
 function coverImg(c,kind){
   const b='https://image.tmdb.org/t/p/'; const ld=`onload="this.classList.add('ld')"`;
   if(c.value[0]==='/') return kind==='backdrops'
@@ -1166,20 +1167,23 @@ function coverImg(c,kind){
 }
 async function loadCovers(it){
   const ck=`covers:${it.id}:${S.settings.fanart?1:0}${S.settings.omdb?1:0}`; const hit=S.cache.get(ck); if(hit&&Date.now()-hit.t<600000) return hit.d;
-  const out={posters:[],backdrops:[],notes:[]}; const tv=it.type==='tv'; const jobs=[]; let lastN=0;
+  const out={posters:[],backdrops:[],notes:[]}; const tv=it.type==='tv'; const jobs=[];
   if(it.tmdb&&hasKey()) jobs.push(['TMDB',(async()=>{
     const d=await tmdb(`/${it.type}/${it.tmdb}/images`,{language:'',include_image_language:'pt,en,null'},{cache:true});
     const rk=x=>x.iso_639_1==='pt'?0:x.iso_639_1==null?1:x.iso_639_1==='en'?2:3;
     const srt=(a,b)=>rk(a)-rk(b)||(b.vote_average||0)-(a.vote_average||0)||(b.width||0)-(a.width||0);
     const L=x=>({src:'TMDB',value:x.file_path,w:x.width,h:x.height,lang:x.iso_639_1||''});
-    if(tv){
-      const last=Math.max(0,...(it.seasons||[]).filter(x=>x.n>0).map(x=>x.n)); lastN=last;
-      const sp=(it.seasons||[]).find(x=>x.n===last)?.poster; if(sp) out.posters.push({src:'TMDB',value:sp,w:null,h:null,lang:'',label:'Temporada '+last});
-      if(last){try{const si=await tmdb(`/tv/${it.tmdb}/season/${last}/images`,{language:'',include_image_language:'pt,en,null'},{cache:true});
-        out.posters.push(...[...(si.posters||[])].sort(srt).slice(0,12).map(x=>({...L(x),label:'Temporada '+last})))}catch{}}
-      if(!out.posters.length) out.notes.push('Sem pôster específico da última temporada no TMDB');
-    } else out.posters.push(...[...(d.posters||[])].sort(srt).slice(0,14).map(L));
+    const seas=tv?[...(it.seasons||[])].filter(x=>x.poster).sort((a,b)=>b.n-a.n).map(x=>({src:'TMDB',value:x.poster,w:null,h:null,lang:'',label:'Temporada '+x.n})):[];
+    out.posters.push(...seas,...[...(d.posters||[])].sort(srt).slice(0,14).map(L));
     out.backdrops.push(...[...(d.backdrops||[])].sort(srt).slice(0,12).map(L));
+  })()]);
+  if(tv&&S.settings.tvmaze!==false) jobs.push(['TVmaze',(async()=>{
+    let id=it.tvmazeId; if(!id&&it.imdbId){const sh=await tvm('/lookup/shows?imdb='+it.imdbId);id=sh?.id}
+    if(!id) return; const imgs=await tvm(`/shows/${id}/images`)||[]; const https=u=>(u||'').replace(/^http:/,'https:');
+    const srt=(a,b)=>(b.main?1:0)-(a.main?1:0)||b.id-a.id;
+    const mk=x=>({src:'TVmaze',value:https(x.resolutions?.original?.url),thumb:https(x.resolutions?.medium?.url||x.resolutions?.original?.url),w:x.resolutions?.original?.width,h:x.resolutions?.original?.height,lang:''});
+    out.posters.push(...imgs.filter(x=>x.type==='poster').sort(srt).slice(0,10).map(mk));
+    out.backdrops.push(...imgs.filter(x=>x.type==='background').sort(srt).slice(0,8).map(mk));
   })()]);
   if(S.settings.omdb&&it.imdbId) jobs.push(['IMDb',(async()=>{const om=await omdbGet(it.imdbId); if(om?.Poster&&om.Poster!=='N/A') out.posters.push({src:'IMDb',value:om.Poster,thumb:om.Poster,w:null,h:null,lang:''})})()]);
   if(S.settings.fanart) jobs.push(['Fanart.tv',(async()=>{
@@ -1187,8 +1191,8 @@ async function loadCovers(it){
     const r=await fetch(`https://webservice.fanart.tv/v3/${idp}?api_key=${encodeURIComponent(S.settings.fanart.trim())}`); if(r.status===404) return; if(!r.ok) throw new Error('Fanart '+r.status);
     const d=await r.json(); const pv=u=>u.replace('/fanart/','/preview/'); const idn=x=>+x.id||0;
     const mk=x=>({src:'Fanart',value:x.url,thumb:pv(x.url),w:null,h:null,lang:x.lang==='00'?'':(x.lang||''),label:x.label});
-    const lastF=Math.max(0,...(it.seasons||[]).filter(x=>x.n>0).map(x=>x.n)); const seas=[...(d.seasonposter||[])].filter(x=>!tv||+x.season===lastF).sort((a,b)=>(+b.season||0)-(+a.season||0)||idn(b)-idn(a)).slice(0,6).map(x=>({...x,label:'Temporada '+x.season}));
-    out.posters.push(...[...seas,...(tv?[]:[...(d.movieposter||[])].sort((a,b)=>idn(b)-idn(a)).slice(0,10))].map(mk));
+    const seas=[...(d.seasonposter||[])].sort((a,b)=>(+b.season||0)-(+a.season||0)||idn(b)-idn(a)).slice(0,6).map(x=>({...x,label:'Temporada '+x.season}));
+    out.posters.push(...[...seas,...[...(d.tvposter||d.movieposter||[])].sort((a,b)=>idn(b)-idn(a)).slice(0,10)].map(mk));
     out.backdrops.push(...[...(d.showbackground||d.moviebackground||[])].sort((a,b)=>idn(b)-idn(a)).slice(0,10).map(mk));
   })()]);
   else out.notes.push('Capas HD do Fanart.tv: informe a chave nas configurações para incluí-las');
@@ -1221,7 +1225,7 @@ function drawCovers(ov){
     <div class="chips">${srcs.length>1?[['','Todas'],...srcs.map(x=>[x,x])].map(([v,l])=>`<button class="chip" data-act="cvsrc" data-v="${esc(v)}" aria-pressed="${ov._f===v}">${esc(l)}</button>`).join(''):''}</div></div>
    <div class="cvwrap"><button class="cvnav prev" data-act="cvnav" data-d="-1" aria-label="Anterior">${ico('chevl',20)}</button><div class="cvrow" id="cvrow" tabindex="0" aria-label="Opções de imagem">${list.map(card).join('')||'<div class="empty" style="flex:1">Nenhuma imagem encontrada nas fontes configuradas.</div>'}</div><button class="cvnav next" data-act="cvnav" data-d="1" aria-label="Próxima">${ico('chevron',20)}</button></div>
    <div class="row" style="margin-top:4px"><label class="btn sm" style="cursor:pointer">${ico('image',14)}Enviar do meu aparelho<input type="file" accept="image/*" id="cvfile" class="sr"></label><button class="btn sm" data-act="cvreset">Voltar ao padrão</button></div>
-   <div class="srcnote" style="margin-top:12px">${data.notes.map(esc).join(' · ')}. Para séries, as capas são as da última temporada; a que está em uso fica no início.</div></div>`;
+   <div class="srcnote" style="margin-top:12px">${data.notes.map(esc).join(' · ')}. As imagens mais novas de cada fonte aparecem primeiro; a que está em uso fica no início.</div></div>`;
 }
 function applyCover(it,kind,value){
   if(kind==='posters'){it.poster=value;it.posterLocked=true}else{it.backdrop=value;it.backdropLocked=true}
