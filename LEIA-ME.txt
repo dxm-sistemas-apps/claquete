@@ -9,7 +9,11 @@ COMO USAR
    - Trakt (opcional): trakt.tv/oauth/applications -> Client ID: nota, status e nota de cada episódio, temporadas novas
    - OMDb (opcional): omdbapi.com/apikey.aspx -> nota do IMDb e Rotten Tomatoes
    - TVmaze: não precisa de chave, vem ativado. Confere temporadas e episódios novos.
+   - Fanart.tv (opcional): fanart.tv/get-an-api-key -> capas e fundos em HD no carrossel de imagens
 3. Os dados ficam no navegador (IndexedDB). Faça backup em Configurações > Backup (JSON).
+
+IMAGENS
+No detalhe de um título, toque na capa (ou em "Trocar fundo") para abrir o carrossel com as imagens de cada fonte (TMDB, TVmaze, IMDb e Fanart.tv). A escolhida fica fixa mesmo depois das atualizações. Os episódios mostram miniatura (TMDB, com TVmaze como reserva).
 
 PÁGINA INICIAL
 O app sempre abre em "Assistindo" (ao abrir, ao sair e voltar). Atualizar a página (F5) mantém a tela atual.
